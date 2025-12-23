@@ -22,7 +22,9 @@ export async function main (): Promise<void> {
   })
 
   await app.register(sensible)
-  await app.register(cors)
+  await app.register(cors, {
+    origin: '*'
+  })
 
   app.get('/', () => 'Welcome to the URL Shortener API')
   app.get('/health', () => ({ status: 'ok' }))
