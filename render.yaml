@@ -12,7 +12,7 @@ services:
     name: url-shortener-api
     plan: free
     runtime: node
-    buildCommand: cd server && pnpm install && pnpm prisma generate && pnpm run build
+    buildCommand: pnpm install && cd server && pnpm prisma generate && pnpm run build
     startCommand: cd server && pnpm prisma migrate deploy && node dist/main.js
     envVars:
       - key: DATABASE_URL
@@ -41,3 +41,4 @@ databases:
   - name: url-shortener-db
     databaseName: url_shortener
     plan: free
+    ipAllowList: []
