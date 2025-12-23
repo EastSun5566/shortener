@@ -9,7 +9,7 @@
     "build": "tsc"
   },
   "devDependencies": {
-    "@types/bcrypt": "^5.0.0",
+    "@types/bcryptjs": "^2.4.6",
     "@types/jsonwebtoken": "^9.0.1",
     "@types/node": "^18.15.11",
     "fastify-tsconfig": "^1.0.1",
@@ -22,7 +22,7 @@
     "@fastify/cors": "^8.2.1",
     "@fastify/sensible": "^5.2.0",
     "@prisma/client": "^5.22.0",
-    "bcrypt": "^5.1.1",
+    "bcryptjs": "^2.4.3",
     "dotenv": "^16.0.3",
     "fastify": "^4.15.0",
     "jsonwebtoken": "^9.0.0",

@@ -12,6 +12,7 @@ services:
     name: url-shortener-api
     plan: free
     runtime: node
+    region: singapore
     buildCommand: pnpm install && cd server && pnpm prisma generate && pnpm run build
     startCommand: cd server && pnpm prisma migrate deploy && node dist/main.js
     envVars:
@@ -35,10 +36,12 @@ services:
   - type: keyvalue
     name: url-shortener-cache
     plan: free
+    region: singapore
     ipAllowList: []
 
 databases:
   - name: url-shortener-db
     databaseName: url_shortener
     plan: free
+    region: singapore
     ipAllowList: []

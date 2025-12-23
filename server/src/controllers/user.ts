@@ -1,5 +1,5 @@
 import type { FastifyReply, FastifyRequest } from 'fastify'
-import { hash, compare } from 'bcrypt'
+import { hash, compare } from 'bcryptjs'
 
 import {
   createUser,
