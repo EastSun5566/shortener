@@ -25,6 +25,7 @@ export async function main (): Promise<void> {
   await app.register(cors)
 
   app.get('/', () => 'Welcome to the URL Shortener API')
+  app.get('/health', () => ({ status: 'ok' }))
   app.register(userRoute)
   app.register(linkRoute)
 

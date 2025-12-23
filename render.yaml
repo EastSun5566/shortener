@@ -1,0 +1,42 @@
+services:
+  - type: web
+    name: url-shortener-web
+    runtime: static
+    buildCommand: cd web && pnpm install && pnpm run build
+    staticPublishPath: ./web/dist
+    envVars:
+      - key: VITE_API_URL
+        value: https://url-shortener-api.onrender.com
+
+  - type: web
+    name: url-shortener-api
+    runtime: node
+    buildCommand: cd server && pnpm install && pnpm prisma generate && pnpm run build
+    startCommand: cd server && pnpm prisma migrate deploy && node dist/main.js
+    envVars:
+      - key: DATABASE_URL
+        fromDatabase:
+          name: url-shortener-db
+          property: connectionString
+      - key: REDIS_URL
+        fromService:
+          name: url-shortener-cache
+          type: keyvalue
+          property: connectionString
+      - key: JWT_SECRET
+        generateValue: true
+      - key: PORT
+        value: 10000
+      - key: HOST
+        value: 0.0.0.0
+    healthCheckPath: /health
+
+  - type: keyvalue
+    name: url-shortener-cache
+    plan: free
+    ipAllowList: []
+
+databases:
+  - name: url-shortener-db
+    databaseName: url_shortener
+    plan: free
