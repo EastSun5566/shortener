@@ -10,6 +10,7 @@ services:
 
   - type: web
     name: url-shortener-api
+    plan: free
     runtime: node
     buildCommand: cd server && pnpm install && pnpm prisma generate && pnpm run build
     startCommand: cd server && pnpm prisma migrate deploy && node dist/main.js
