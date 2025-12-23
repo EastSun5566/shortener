@@ -6,7 +6,10 @@ services:
     staticPublishPath: ./web/dist
     envVars:
       - key: VITE_API_URL
-        value: https://url-shortener-api.onrender.com
+        fromService:
+          name: url-shortener-api
+          type: web
+          property: host
 
   - type: web
     name: url-shortener-api
