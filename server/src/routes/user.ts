@@ -13,8 +13,11 @@ import {
 import { config } from '../config.js'
 
 const authSchema = z.object({
-  email: z.email('Invalid email format'),
-  password: z.string().min(1, 'Password is required')
+  email: z.email('Invalid email format').toLowerCase(),
+  password: z.string()
+    .min(8, 'Password must be at least 8 characters')
+    .max(100, 'Password must not exceed 100 characters')
+    .regex(/^(?=.*[a-zA-Z])(?=.*\d)/, 'Password must contain at least one letter and one number')
 })
 
 // Rate limit: 5 requests per minute for auth endpoints
@@ -31,7 +34,7 @@ export const userRoute = new Hono()
     // check if email is already registered
     const existingUser = await findUserByEmail(email)
     if (existingUser) {
-      throw new HTTPException(400, { message: 'Email is already registered' })
+      throw new HTTPException(409, { message: 'Registration failed. Please try again.' })
     }
 
     // hash password
@@ -51,13 +54,13 @@ export const userRoute = new Hono()
     // check if email exists
     const user = await findUserByEmail(email)
     if (!user) {
-      throw new HTTPException(400, { message: 'Email is not registered' })
+      throw new HTTPException(401, { message: 'Invalid email or password' })
     }
 
     // compare password
     const isPasswordCorrect = await compare(password, user.password)
     if (!isPasswordCorrect) {
-      throw new HTTPException(401, { message: 'Unauthorized' })
+      throw new HTTPException(401, { message: 'Invalid email or password' })
     }
 
     // generate JWT

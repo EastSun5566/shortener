@@ -15,11 +15,13 @@ export async function createShortenKey () {
 }
 
 const PREFIX_KEY = 'api:link'
+const CACHE_TTL = 60 * 60 * 24 * 7 // 7 days in seconds
+
 export async function setLinkFromCache (shortenKey: string, originalUrl: string) {
   const cache = await getCacheClient()
 
   const key = `${PREFIX_KEY}:${shortenKey}`
-  return await cache.set(key, originalUrl)
+  return await cache.set(key, originalUrl, { EX: CACHE_TTL })
 }
 
 export async function getLinkFromCache (shortenKey: string) {
