@@ -70,6 +70,7 @@ export function RootRoute (): JSX.Element {
           type="url"
           placeholder="Type URL here..."
           {...register('originalUrl', { required: true })}
+          autoFocus
         />
 
         <button

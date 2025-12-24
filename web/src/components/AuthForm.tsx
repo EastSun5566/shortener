@@ -34,6 +34,7 @@ export function AuthForm ({
           type="email"
           placeholder="Type Email here..."
           {...registerInput('email', { required: true })}
+          autoFocus
         />
 
         <input
