@@ -4,11 +4,18 @@
   "description": "A good URL shortener service",
   "scripts": {
     "lint": "eslint --fix .",
+    "test": "pnpm run server:test",
+    "build": "pnpm run server:build && pnpm run web:build",
     "server:dev": "pnpm --filter server dev",
     "server:migrate": "pnpm --filter server db:migrate",
-    "web:dev": "pnpm --filter web dev"
+    "sever:build": "pnpm --filter server build",
+    "server:start": "pnpm --filter server start",
+    "server:test": "pnpm --filter server test",
+    "web:dev": "pnpm --filter web dev",
+    "web:build": "pnpm --filter web build",
+    "web:start": "pnpm --filter web preview"
   },
-  "author": "汪東陽",
+  "author": "Michael Wang",
   "license": "MIT",
   "devDependencies": {
     "@eslint/js": "^9.19.0",
