@@ -9,7 +9,8 @@ export const config = {
   },
   cache: {
     host: env.CACHE_HOST ?? 'localhost',
-    port: env.CACHE_PORT ?? 6379
+    port: env.CACHE_PORT ?? 6379,
+    linkTtl: 60 * 60 * 24 * 7 // 7 days in seconds
   },
   db: {
     url: env.DATABASE_URL

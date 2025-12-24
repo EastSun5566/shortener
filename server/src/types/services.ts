@@ -1,0 +1,40 @@
+export interface UserService {
+  createUser: (email: string, hashedPassword: string) => Promise<{ id: number }>
+  findUserByEmail: (email: string) => Promise<{ id: number, email: string, password: string } | undefined>
+}
+
+export interface LinkService {
+  createLink: (data: { originalUrl: string, shortenKey: string, userId?: number }) => Promise<void>
+  findLinkByShortenKey: (shortenKey: string) => Promise<{ originalUrl: string } | undefined>
+  findLinksByUserId: (userId: number) => Promise<Array<{ shortenKey: string }>>
+}
+
+export interface CacheService {
+  get: (shortenKey: string) => Promise<string | null>
+  set: (shortenKey: string, originalUrl: string) => Promise<void>
+}
+
+export interface TokenService {
+  signToken: (payload: { email: string, id: number }) => string
+  verifyToken: (token: string) => { email: string, id: number }
+}
+
+export interface UtilsService {
+  createShortenKey: () => Promise<string>
+  hashPassword: (password: string, saltRounds: number) => Promise<string>
+  comparePassword: (password: string, hash: string) => Promise<boolean>
+}
+
+export interface AppDependencies {
+  userService: UserService
+  linkService: LinkService
+  cacheService: CacheService
+  tokenService: TokenService
+  utilsService: UtilsService
+  config: {
+    security: {
+      bcryptSaltRounds: number
+      corsOrigins: string[]
+    }
+  }
+}
