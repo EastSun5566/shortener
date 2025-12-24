@@ -1,18 +1,17 @@
-
+import { eq } from 'drizzle-orm'
 import { getDbClient } from './db'
+import { users } from '../drizzle/schema'
 
 export async function findUserByEmail (email: string) {
   const db = await getDbClient()
 
-  return await db.user.findUnique({
-    where: { email }
-  })
+  const result = await db.select().from(users).where(eq(users.email, email)).limit(1)
+  return result[0] ?? null
 }
 
 export async function createUser (email: string, password: string) {
   const db = await getDbClient()
 
-  return await db.user.create({
-    data: { email, password }
-  })
+  const result = await db.insert(users).values({ email, password }).returning()
+  return result[0]
 }

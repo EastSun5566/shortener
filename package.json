@@ -5,7 +5,7 @@
   "scripts": {
     "lint": "eslint --fix --ignore-path .gitignore .",
     "server:dev": "pnpm --filter server dev",
-    "server:migrate": "pnpm --filter server migrate",
+    "server:migrate": "pnpm --filter server db:migrate",
     "web:dev": "pnpm --filter web dev"
   },
   "author": "汪東陽",

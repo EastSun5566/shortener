@@ -1,10 +1,5 @@
-import { PrismaClient } from '@prisma/client'
+import { db } from '../drizzle/db'
 
-let client: PrismaClient | null = null
 export async function getDbClient () {
-  if (client != null) return client
-
-  client = new PrismaClient()
-
-  return client
+  return db
 }

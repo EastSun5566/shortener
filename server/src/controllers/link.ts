@@ -31,9 +31,9 @@ export async function handleRedirect (
   }
 
   // 3. add to cache
-  await setLinkFromCache(shortenKey, link.original_url)
+  await setLinkFromCache(shortenKey, link.originalUrl)
 
-  reply.redirect(link.original_url)
+  reply.redirect(link.originalUrl)
 }
 
 export async function handleListLinks (
@@ -52,7 +52,7 @@ export async function handleListLinks (
   // 2. get links from database
   const links = await findLinksByUserId(verifyToken(token).id)
 
-  reply.send(links.map(({ shorten_key: shortenKey }: { shorten_key: string }) => ({
+  reply.send(links.map(({ shortenKey }) => ({
     shortenUrl: `http://${request.hostname}/${shortenKey}`
   })))
 }

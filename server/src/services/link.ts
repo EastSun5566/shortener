@@ -1,7 +1,8 @@
-
+import { eq } from 'drizzle-orm'
 import { getCacheClient } from './cache'
 import { getDbClient } from './db'
 import { toBase62 } from '../utils'
+import { links } from '../drizzle/schema'
 
 export async function createShortenKey () {
   const cache = await getCacheClient()
@@ -30,17 +31,14 @@ export async function getLinkFromCache (shortenKey: string) {
 export async function findLinkByShortenKey (shortenKey: string) {
   const db = await getDbClient()
 
-  return await db.link.findUnique({
-    where: { shorten_key: shortenKey }
-  })
+  const result = await db.select().from(links).where(eq(links.shortenKey, shortenKey)).limit(1)
+  return result[0] ?? null
 }
 
 export async function findLinksByUserId (userId: number) {
   const db = await getDbClient()
 
-  return await db.link.findMany({
-    where: { userId }
-  })
+  return await db.select().from(links).where(eq(links.userId, userId))
 }
 
 export async function createLink ({
@@ -54,15 +52,11 @@ export async function createLink ({
 }) {
   const db = await getDbClient()
 
-  return await db.link.create({
-    data: {
-      original_url: originalUrl,
-      shorten_key: shortenKey,
-      ...(userId && {
-        user: {
-          connect: { id: userId }
-        }
-      })
-    }
-  })
+  const result = await db.insert(links).values({
+    originalUrl,
+    shortenKey,
+    userId
+  }).returning()
+  
+  return result[0]
 }
