@@ -21,15 +21,15 @@ const authSchema = z.object({
 })
 
 // Rate limit: 5 requests per minute for auth endpoints
-const authRateLimit = rateLimiter({
+const authRateLimiter = rateLimiter({
   windowMs: 60 * 1000, // 1 minute
   limit: 5,
   keyGenerator: (c) => c.req.header('x-forwarded-for') ?? c.req.header('x-real-ip') ?? 'unknown'
 })
 
 export const userRoute = new Hono()
-  .post('/register', authRateLimit, zValidator('json', authSchema), async (c) => {
-    const { email, password } = c.req.valid('json')
+  .post('/register', authRateLimiter, zValidator('json', authSchema), async (ctx) => {
+    const { email, password } = ctx.req.valid('json')
 
     // check if email is already registered
     const existingUser = await findUserByEmail(email)
@@ -46,10 +46,10 @@ export const userRoute = new Hono()
     // generate JWT
     const token = signToken({ email, id })
 
-    return c.json({ token })
+    return ctx.json({ token })
   })
-  .post('/login', authRateLimit, zValidator('json', authSchema), async (c) => {
-    const { email, password } = c.req.valid('json')
+  .post('/login', authRateLimiter, zValidator('json', authSchema), async (ctx) => {
+    const { email, password } = ctx.req.valid('json')
 
     // check if email exists
     const user = await findUserByEmail(email)
@@ -66,5 +66,5 @@ export const userRoute = new Hono()
     // generate JWT
     const token = signToken({ email, id: user.id })
 
-    return c.json({ token })
+    return ctx.json({ token })
   })

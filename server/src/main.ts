@@ -3,11 +3,14 @@ import { Hono } from 'hono'
 import { cors } from 'hono/cors'
 import { logger } from 'hono/logger'
 import { requestId, type RequestIdVariables } from 'hono/request-id'
+import { secureHeaders } from 'hono/secure-headers'
+import { timeout } from 'hono/timeout'
 import { HTTPException } from 'hono/http-exception'
 
 import {
   linkRoute,
-  userRoute
+  userRoute,
+  healthRoute
 } from './routes/index.js'
 import { config } from './config.js'
 import { closeCacheClient } from './services/cache.js'
@@ -16,6 +19,8 @@ const app = new Hono<{ Variables: RequestIdVariables }>()
 
 // Middleware
 app.use('*', requestId())
+app.use('*', secureHeaders())
+app.use('*', timeout(30000)) // 30 seconds timeout
 app.use('*', logger((message: string) => {
   // Parse the default Hono logger format to extract info
   const match = message.match(/(-->|<--) (\w+) ([^ ]+)(?: (\d+))?(?: (\d+(?:\.\d+)?(?:ms|s)))?/)
@@ -78,7 +83,7 @@ app.onError((error, ctx) => {
 
 // Routes
 app.get('/', (c) => c.text('Welcome to the URL Shortener API'))
-app.get('/health', (c) => c.json({ status: 'ok' }))
+app.route('/', healthRoute)
 app.route('/', userRoute)
 app.route('/', linkRoute)
 
