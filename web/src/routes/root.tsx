@@ -80,7 +80,7 @@ export function RootRoute () {
     </nav>
 
     <main className="text-center">
-      <h1 className="mb-10">URL Shortener</h1>
+      <h1 className="mb-10">🔗</h1>
 
       <form className="mb-10" onSubmit={handleSubmit}>
         <input

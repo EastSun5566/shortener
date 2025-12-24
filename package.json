@@ -1,7 +1,7 @@
 {
-  "name": "url-shortener-service",
+  "name": "shortener",
   "version": "1.0.0",
-  "description": "A good URL shortener service",
+  "description": "🔗 A good URL shortener",
   "scripts": {
     "lint": "eslint --fix .",
     "test": "pnpm run server:test",
