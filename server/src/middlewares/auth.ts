@@ -23,7 +23,7 @@ export const auth = createMiddleware<{ Variables: AuthVariables }>(async (ctx, n
     ctx.set('userId', payload.id)
     ctx.set('email', payload.email)
     await next()
-  } catch (error) {
+  } catch {
     throw new HTTPException(401, { message: 'Unauthorized' })
   }
 })
@@ -45,7 +45,7 @@ export const optionalAuth = createMiddleware<{ Variables: Partial<AuthVariables>
     const payload = verifyToken(token)
     ctx.set('userId', payload.id)
     ctx.set('email', payload.email)
-  } catch (error) {
+  } catch {
     // Ignore invalid token for optional auth
   }
 

@@ -14,7 +14,7 @@ export const healthRoute = new Hono()
 
     // Check database connection
     try {
-      const db = await getDbClient()
+      const db = getDbClient()
       await db.execute('SELECT 1')
       checks.database = 'healthy'
     } catch (error) {

@@ -20,7 +20,7 @@ export function createApp (deps: AppDependencies) {
   app.use('*', timeout(30000)) // 30 seconds timeout
   app.use('*', logger((message: string) => {
     // Parse the default Hono logger format to extract info
-    const match = message.match(/(-->|<--) (\w+) ([^ ]+)(?: (\d+))?(?: (\d+(?:\.\d+)?(?:ms|s)))?/)
+    const match = /(-->|<--) (\w+) ([^ ]+)(?: (\d+))?(?: (\d+(?:\.\d+)?(?:ms|s)))?/.exec(message)
     if (!match) {
       console.log(message)
       return

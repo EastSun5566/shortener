@@ -1,5 +1,5 @@
 import { db } from '../drizzle/db.js'
 
-export async function getDbClient () {
+export function getDbClient() {
   return db
 }

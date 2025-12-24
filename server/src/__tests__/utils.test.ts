@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-empty-function */
 import { beforeEach, describe, it, mock } from 'node:test'
 import { strict as assert } from 'node:assert'
 

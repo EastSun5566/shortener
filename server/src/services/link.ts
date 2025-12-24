@@ -32,14 +32,14 @@ export async function getLinkFromCache (shortenKey: string) {
 }
 
 export async function findLinkByShortenKey (shortenKey: string) {
-  const db = await getDbClient()
+  const db = getDbClient()
 
   const result = await db.select().from(links).where(eq(links.shortenKey, shortenKey)).limit(1)
   return result[0] ?? null
 }
 
 export async function findLinksByUserId (userId: number) {
-  const db = await getDbClient()
+  const db = getDbClient()
 
   return await db.select().from(links).where(eq(links.userId, userId))
 }
@@ -53,7 +53,7 @@ export async function createLink ({
   shortenKey: string
   userId?: number
 }) {
-  const db = await getDbClient()
+  const db = getDbClient()
 
   const result = await db.insert(links).values({
     originalUrl,

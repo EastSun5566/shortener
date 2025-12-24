@@ -73,7 +73,7 @@ describe('User Routes - Integration Tests', () => {
       })
 
       assert.strictEqual(res.status, 400)
-      const data = await res.json() as { error: { issues: Array<{ message: string }> } }
+      const data = await res.json() as { error: { issues: { message: string }[] } }
       assert.ok(data.error)
     })
 
@@ -91,7 +91,7 @@ describe('User Routes - Integration Tests', () => {
       })
 
       assert.strictEqual(res.status, 400)
-      const data = await res.json() as { error: { issues: Array<{ message: string }> } }
+      const data = await res.json() as { error: { issues: { message: string }[] } }
       assert.ok(data.error)
     })
   })

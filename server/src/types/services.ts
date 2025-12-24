@@ -6,7 +6,7 @@ export interface UserService {
 export interface LinkService {
   createLink: (data: { originalUrl: string, shortenKey: string, userId?: number }) => Promise<void>
   findLinkByShortenKey: (shortenKey: string) => Promise<{ originalUrl: string } | undefined>
-  findLinksByUserId: (userId: number) => Promise<Array<{ shortenKey: string }>>
+  findLinksByUserId: (userId: number) => Promise<{ shortenKey: string }[]>
 }
 
 export interface CacheService {

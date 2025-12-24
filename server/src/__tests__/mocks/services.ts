@@ -7,8 +7,11 @@ import type {
   AppDependencies
 } from '../../types/services.js'
 
+/* eslint-disable @typescript-eslint/require-await */
+/* eslint-disable @typescript-eslint/no-unused-vars */
+
 export class MockUserService implements UserService {
-  private users: Array<{ id: number, email: string, password: string }> = []
+  private users: { id: number, email: string, password: string }[] = []
 
   createUser = async (email: string, hashedPassword: string) => {
     const id = this.users.length + 1
@@ -27,7 +30,7 @@ export class MockUserService implements UserService {
 }
 
 export class MockLinkService implements LinkService {
-  private links: Array<{ originalUrl: string, shortenKey: string, userId?: number }> = []
+  private links: { originalUrl: string, shortenKey: string, userId?: number }[] = []
 
   createLink = async (data: { originalUrl: string, shortenKey: string, userId?: number }) => {
     this.links.push(data)

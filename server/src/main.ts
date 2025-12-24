@@ -1,6 +1,7 @@
 import { serve } from '@hono/node-server'
 import { createApp } from './factories/createApp.js'
 import { config } from './config.js'
+import { validateEnv } from './utils.js'
 import { closeCacheClient } from './services/cache.js'
 import {
   userService,
@@ -19,15 +20,19 @@ const app = createApp({
   config
 })
 
+// eslint-disable-next-line @typescript-eslint/require-await
 export async function main (): Promise<void> {
+  // Validate environment
+  validateEnv()
+  
   // Graceful shutdown handler
   const shutdown = async (signal: string) => {
     console.log(`\n${signal} received, closing server gracefully...`)
     await closeCacheClient()
     process.exit(0)
   }
-  process.on('SIGTERM', async () => await shutdown('SIGTERM'))
-  process.on('SIGINT', async () => await shutdown('SIGINT'))
+  process.on('SIGTERM', async () => { await shutdown('SIGTERM') })
+  process.on('SIGINT', async () => { await shutdown('SIGINT') })
 
   // Start server
   serve({
@@ -38,4 +43,7 @@ export async function main (): Promise<void> {
   })
 }
 
-main()
+main().catch((error: unknown) => {
+  console.error('Failed to start server:', error)
+  process.exit(1)
+})

@@ -163,7 +163,7 @@ describe('Link Routes - Integration Tests', () => {
       })
 
       assert.strictEqual(res.status, 200)
-      const data = await res.json() as Array<{ shortenUrl: string }>
+      const data = await res.json() as { shortenUrl: string }[]
       assert.strictEqual(data.length, 1)
       assert.ok(data[0].shortenUrl.includes('/key'))
     })

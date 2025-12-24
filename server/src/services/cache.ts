@@ -52,7 +52,7 @@ export async function getCacheClient (): Promise<RedisClientType> {
         }
       })
 
-    client.on('error', error => {
+    client.on('error', (error: Error) => {
       console.error('Redis Client Error:', error.message)
     })
     client.on('connect', () => {
