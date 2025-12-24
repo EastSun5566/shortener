@@ -2,6 +2,7 @@ import { Hono } from 'hono'
 import { zValidator } from '@hono/zod-validator'
 import { z } from 'zod'
 import { HTTPException } from 'hono/http-exception'
+import { rateLimiter } from 'hono-rate-limiter'
 
 import {
   createLink,
@@ -17,7 +18,14 @@ const createLinkSchema = z.object({
   originalUrl: z.url('Invalid URL format')
 })
 
-const app = new Hono()
+// Rate limit: 20 requests per minute for link creation
+const createLinkRateLimit = rateLimiter({
+  windowMs: 60 * 1000, // 1 minute
+  limit: 20,
+  keyGenerator: (c) => c.req.header('x-forwarded-for') ?? c.req.header('x-real-ip') ?? 'unknown'
+})
+
+export const linkRoute = new Hono()
   .get('/links', async (c) => {
     // check authorization
     const token = c.req.header('authorization')?.split(' ')[1]
@@ -33,7 +41,7 @@ const app = new Hono()
       shortenUrl: `${new URL(c.req.url).origin}/${shortenKey}`
     })))
   })
-  .post('/links', zValidator('json', createLinkSchema), async (c) => {
+  .post('/links', createLinkRateLimit, zValidator('json', createLinkSchema), async (c) => {
     const { originalUrl } = c.req.valid('json')
 
     // create shortenKey
@@ -77,7 +85,3 @@ const app = new Hono()
 
     return c.redirect(link.originalUrl)
   })
-
-export const linkRoute = app
-export type LinkRouteType = typeof app
-export default app

@@ -1,4 +1,4 @@
-import { pgTable, serial, text, varchar, integer, timestamp } from 'drizzle-orm/pg-core'
+import { pgTable, serial, text, varchar, integer, timestamp, index } from 'drizzle-orm/pg-core'
 import { relations } from 'drizzle-orm'
 
 export const users = pgTable('User', {
@@ -7,7 +7,10 @@ export const users = pgTable('User', {
   password: text('password').notNull(),
   createdAt: timestamp('createdAt', { mode: 'date' }).notNull().defaultNow(),
   updatedAt: timestamp('updatedAt', { mode: 'date' }).notNull().defaultNow()
-})
+}, (table) => ({
+  // Index for faster email lookups
+  emailIdx: index('user_email_idx').on(table.email)
+}))
 
 export const links = pgTable('Link', {
   id: serial('id').primaryKey(),
@@ -16,7 +19,12 @@ export const links = pgTable('Link', {
   createdAt: timestamp('createdAt', { mode: 'date' }).notNull().defaultNow(),
   updatedAt: timestamp('updatedAt', { mode: 'date' }).notNull().defaultNow(),
   userId: integer('userId').references(() => users.id)
-})
+}, (table) => ({
+  // Index for faster shortenKey lookups (most common query)
+  shortenKeyIdx: index('link_shorten_key_idx').on(table.shortenKey),
+  // Index for faster user links lookup
+  userIdIdx: index('link_user_id_idx').on(table.userId)
+}))
 
 // Relations
 export const usersRelations = relations(users, ({ many }) => ({

@@ -3,6 +3,7 @@ import { zValidator } from '@hono/zod-validator'
 import { z } from 'zod'
 import { hash, compare } from 'bcryptjs'
 import { HTTPException } from 'hono/http-exception'
+import { rateLimiter } from 'hono-rate-limiter'
 
 import {
   createUser,
@@ -16,8 +17,15 @@ const authSchema = z.object({
   password: z.string().min(1, 'Password is required')
 })
 
-const app = new Hono()
-  .post('/register', zValidator('json', authSchema), async (c) => {
+// Rate limit: 5 requests per minute for auth endpoints
+const authRateLimit = rateLimiter({
+  windowMs: 60 * 1000, // 1 minute
+  limit: 5,
+  keyGenerator: (c) => c.req.header('x-forwarded-for') ?? c.req.header('x-real-ip') ?? 'unknown'
+})
+
+export const userRoute = new Hono()
+  .post('/register', authRateLimit, zValidator('json', authSchema), async (c) => {
     const { email, password } = c.req.valid('json')
 
     // check if email is already registered
@@ -37,7 +45,7 @@ const app = new Hono()
 
     return c.json({ token })
   })
-  .post('/login', zValidator('json', authSchema), async (c) => {
+  .post('/login', authRateLimit, zValidator('json', authSchema), async (c) => {
     const { email, password } = c.req.valid('json')
 
     // check if email exists
@@ -57,7 +65,3 @@ const app = new Hono()
 
     return c.json({ token })
   })
-
-export const userRoute = app
-export type UserRouteType = typeof app
-export default app

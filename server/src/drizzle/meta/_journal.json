@@ -8,6 +8,13 @@
       "when": 1766579038862,
       "tag": "0000_strong_scrambler",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1766586566255,
+      "tag": "0001_furry_the_spike",
+      "breakpoints": true
     }
   ]
 }

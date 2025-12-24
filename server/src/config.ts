@@ -1,4 +1,4 @@
-import { validateEnv } from './validators/env.js'
+import { validateEnv } from './utils.js'
 
 const env = validateEnv()
 

@@ -45,5 +45,3 @@ export async function main (): Promise<void> {
 }
 
 main()
-
-export type AppType = typeof app
