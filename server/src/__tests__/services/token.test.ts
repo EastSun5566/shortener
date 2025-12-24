@@ -1,6 +1,7 @@
 import { describe, it } from 'node:test'
-import assert from 'node:assert/strict'
-import { signToken, verifyToken } from '../../services/token'
+import { strict as assert } from 'node:assert'
+
+import { signToken, verifyToken } from '../../services/token.js'
 
 describe('JWT Token Service', () => {
   const testPayload = {

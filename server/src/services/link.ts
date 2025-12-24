@@ -1,8 +1,9 @@
 import { eq } from 'drizzle-orm'
-import { getCacheClient } from './cache'
-import { getDbClient } from './db'
-import { toBase62 } from '../utils'
-import { links } from '../drizzle/schema'
+
+import { getCacheClient } from './cache.js'
+import { getDbClient } from './db.js'
+import { toBase62 } from '../utils.js'
+import { links } from '../drizzle/schema.js'
 
 export async function createShortenKey () {
   const cache = await getCacheClient()
@@ -57,6 +58,6 @@ export async function createLink ({
     shortenKey,
     userId
   }).returning()
-  
+
   return result[0]
 }

@@ -11,7 +11,7 @@ const envSchema = z.object({
   REDIS_URL: z.url().optional(),
 
   // Database
-  DATABASE_URL: z.string().url(),
+  DATABASE_URL: z.url(),
 
   // Security
   JWT_SECRET: z.string().min(32, 'JWT_SECRET must be at least 32 characters'),

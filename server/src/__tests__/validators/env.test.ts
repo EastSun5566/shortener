@@ -1,6 +1,7 @@
 import { describe, it, beforeEach, mock } from 'node:test'
-import assert from 'node:assert/strict'
-import { validateEnv } from '../../validators/env'
+import { strict as assert } from 'node:assert'
+
+import { validateEnv } from '../../validators/env.js'
 
 describe('Environment Variables Validation', () => {
   const originalEnv = process.env

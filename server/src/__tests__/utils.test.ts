@@ -1,6 +1,7 @@
-import { describe, it, before } from 'node:test'
-import assert from 'node:assert/strict'
-import { toBase62 } from '../utils'
+import { describe, it } from 'node:test'
+import { strict as assert } from 'node:assert'
+
+import { toBase62 } from '../utils.js'
 
 describe('Short URL Generation', () => {
   describe('toBase62', () => {

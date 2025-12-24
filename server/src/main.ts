@@ -1,52 +1,37 @@
-import createApp from 'fastify'
-import cors from '@fastify/cors'
-import sensible from '@fastify/sensible'
-import rateLimit from '@fastify/rate-limit'
+import { serve } from '@hono/node-server'
+import { Hono } from 'hono'
+import { cors } from 'hono/cors'
+import { logger } from 'hono/logger'
 
 import {
   linkRoute,
   userRoute
-} from './routes'
-import { config } from './config'
+} from './routes/index.js'
+import { config } from './config.js'
 
 export async function main (): Promise<void> {
-  const app = createApp({
-    logger: {
-      transport: {
-        target: 'pino-pretty'
-      }
-    }
-  })
+  const app = new Hono()
 
-  await app.register(sensible)
-  await app.register(rateLimit, {
-    max: 100,
-    timeWindow: '15 minutes',
-    errorResponseBuilder: () => ({
-      statusCode: 429,
-      error: 'Too Many Requests',
-      message: 'Rate limit exceeded, please try again later.'
-    })
-  })
-  await app.register(cors, {
+  // Middleware
+  app.use(logger())
+  app.use('*', cors({
     origin: config.security.corsOrigins,
     credentials: true
+  }))
+
+  // Routes
+  app.get('/', (c) => c.text('Welcome to the URL Shortener API'))
+  app.get('/health', (c) => c.json({ status: 'ok' }))
+  app.route('/', userRoute)
+  app.route('/', linkRoute)
+
+  // Start server
+  serve({
+    fetch: app.fetch,
+    port: config.server.port
+  }, (info) => {
+    console.log(`Server is running on http://${config.server.host}:${info.port}`)
   })
-
-  app.get('/', () => 'Welcome to the URL Shortener API')
-  app.get('/health', () => ({ status: 'ok' }))
-  app.register(userRoute)
-  app.register(linkRoute)
-
-  try {
-    await app.listen({
-      host: config.server.host,
-      port: config.server.port
-    })
-  } catch (error: unknown) {
-    app.log.error(error)
-    process.exit(1)
-  }
 }
 
 main()

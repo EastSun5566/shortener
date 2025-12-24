@@ -1,14 +1,15 @@
-import type { FastifyPluginAsync } from 'fastify'
+import { Hono } from 'hono'
 import {
   handleRedirect,
   handleCreateLink,
   handleListLinks
-} from '../controllers'
+} from '../controllers/index.js'
 
-export const linkRoute: FastifyPluginAsync = async (app): Promise<void> => {
-  app.get('/links', handleListLinks)
-  app.post('/links', handleCreateLink)
-  app.get('/:shortenKey', handleRedirect)
-}
+const app = new Hono()
 
-export default linkRoute
+app.get('/links', handleListLinks)
+app.post('/links', handleCreateLink)
+app.get('/:shortenKey', handleRedirect)
+
+export const linkRoute = app
+export default app

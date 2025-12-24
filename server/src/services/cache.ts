@@ -1,6 +1,6 @@
 import { createClient, type RedisClientType } from 'redis'
 
-import { config } from '../config'
+import { config } from '../config.js'
 
 let client: RedisClientType | null = null
 export async function getCacheClient () {

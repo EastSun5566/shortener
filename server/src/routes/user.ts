@@ -1,9 +1,10 @@
-import type { FastifyPluginAsync } from 'fastify'
-import { handleLogin, handleRegister } from '../controllers'
+import { Hono } from 'hono'
+import { handleLogin, handleRegister } from '../controllers/index.js'
 
-export const userRoute: FastifyPluginAsync = async (app): Promise<void> => {
-  app.post('/register', handleRegister)
-  app.post('/login', handleLogin)
-}
+const app = new Hono()
 
-export default userRoute
+app.post('/register', handleRegister)
+app.post('/login', handleLogin)
+
+export const userRoute = app
+export default app

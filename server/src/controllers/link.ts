@@ -1,4 +1,4 @@
-import type { FastifyReply, FastifyRequest } from 'fastify'
+import type { Context } from 'hono'
 
 import {
   createLink,
@@ -8,75 +8,64 @@ import {
   getLinkFromCache,
   setLinkFromCache,
   verifyToken
-} from '../services'
-import { isValidUrl } from '../utils'
+} from '../services/index.js'
+import { isValidUrl } from '../utils.js'
+
 export async function handleRedirect (
-  request: FastifyRequest<{ Params: { shortenKey: string } }>,
-  reply: FastifyReply
+  ctx: Context
 ) {
-  const { shortenKey } = request.params
+  const { shortenKey } = ctx.req.param()
 
   // 1. get from cache
   const originalUrl = await getLinkFromCache(shortenKey)
   if (originalUrl) {
-    reply.redirect(originalUrl)
-    return
+    return ctx.redirect(originalUrl)
   }
 
   // 2. get from database
   const link = await findLinkByShortenKey(shortenKey)
   if (!link) {
-    reply.notFound('Link not found')
-    return
+    return ctx.text('Link not found', 404)
   }
 
   // 3. add to cache
   await setLinkFromCache(shortenKey, link.originalUrl)
 
-  reply.redirect(link.originalUrl)
+  return ctx.redirect(link.originalUrl)
 }
 
 export async function handleListLinks (
-  request: FastifyRequest<{
-    Headers: { authorization?: string }
-  }>,
-  reply: FastifyReply
+  ctx: Context
 ) {
   // 1. check authorization
-  const token = request.headers.authorization?.split(' ')[1]
+  const token = ctx.req.header('authorization')?.split(' ')[1]
   if (!token) {
-    reply.unauthorized('Unauthorized')
-    return
+    return ctx.text('Unauthorized', 401)
   }
 
   // 2. get links from database
   const links = await findLinksByUserId(verifyToken(token).id)
 
-  reply.send(links.map(({ shortenKey }) => ({
-    shortenUrl: `http://${request.hostname}/${shortenKey}`
+  return ctx.json(links.map(({ shortenKey }) => ({
+    shortenUrl: `http://${new URL(ctx.req.url).host}/${shortenKey}`
   })))
 }
 
 export async function handleCreateLink (
-  request: FastifyRequest<{
-    Headers: { authorization?: string }
-    Body: { originalUrl: string }
-  }>,
-  reply: FastifyReply
+  ctx: Context
 ) {
-  const { originalUrl } = request.body
+  const { originalUrl } = await ctx.req.json<{ originalUrl: string }>()
 
   // 1. validate originalUrl
   if (!originalUrl || !isValidUrl(originalUrl)) {
-    reply.badRequest('Invalid URL')
-    return
+    return ctx.text('Invalid URL', 400)
   }
 
   // 2. create shortenKey
   const shortenKey = await createShortenKey()
 
   // 3. insert into database
-  const token = request.headers.authorization?.split(' ')[1]
+  const token = ctx.req.header('authorization')?.split(' ')[1]
   await createLink({
     originalUrl,
     shortenKey,
@@ -88,5 +77,5 @@ export async function handleCreateLink (
   // 4. add to cache
   await setLinkFromCache(shortenKey, originalUrl)
 
-  reply.status(201).send({ shortenUrl: `http://${request.hostname}/${shortenKey}` })
+  return ctx.json({ shortenUrl: `http://${new URL(ctx.req.url).host}/${shortenKey}` }, 201)
 }
