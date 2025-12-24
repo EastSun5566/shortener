@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { useForm } from 'react-hook-form'
 import { Link } from 'react-router-dom'
 
@@ -9,7 +9,8 @@ export function RootRoute (): JSX.Element {
   const {
     register,
     handleSubmit: createSubmitHandler,
-    formState
+    formState,
+    reset
   } = useForm({
     defaultValues: {
       originalUrl: ''
@@ -17,22 +18,34 @@ export function RootRoute (): JSX.Element {
   })
   const [shortenUrls, setShortenUrls] = useState<string[]>([])
   const [error, setError] = useState('')
-  const fetchLinks = async () => {
+
+  const fetchLinks = useCallback(async () => {
     try {
       const { data } = await getLink()
       setShortenUrls(data.map(({ shortenUrl }) => shortenUrl))
+      setError('')
     } catch (error) {
       const { response } = error as ResponseError
-      setError(response?.data.message ?? 'Something went wrong. Please try again later.')
+      setError(response?.data.error ?? 'Something went wrong. Please try again later.')
     }
-  }
+  }, [])
+
   useEffect(() => {
-    if (isLogin) fetchLinks()
-  }, [isLogin])
+    if (isLogin) {
+      fetchLinks()
+    }
+  }, [isLogin, fetchLinks])
 
   const handleSubmit = createSubmitHandler(async (values) => {
-    const { data } = await createLink(values)
-    setShortenUrls((shortenUrls) => [...shortenUrls, data.shortenUrl])
+    try {
+      setError('')
+      const { data } = await createLink(values)
+      setShortenUrls((shortenUrls) => [...shortenUrls, data.shortenUrl])
+      reset()
+    } catch (error) {
+      const { response } = error as ResponseError
+      setError(response?.data.error ?? 'Failed to create short link. Please try again.')
+    }
   })
 
   const handleLogout = () => {

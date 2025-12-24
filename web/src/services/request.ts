@@ -1,10 +1,7 @@
 import axios, { type AxiosInstance, type AxiosError } from 'axios'
+import type { ErrorResponse } from '../types'
 
-export type ResponseError = AxiosError<{
-  error: string
-  message: string
-  statusCode: number
-}>
+export type ResponseError = AxiosError<ErrorResponse>
 
 let request: AxiosInstance | null = null
 export function getRequest () {

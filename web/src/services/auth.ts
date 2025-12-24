@@ -1,13 +1,5 @@
 import { getRequest } from './request'
-
-interface AuthData {
-  email: string
-  password: string
-}
-
-interface AuthResponse {
-  token: string
-}
+import type { AuthData, AuthResponse } from '../types'
 
 export async function register (data: AuthData) {
   return await getRequest().post<AuthResponse>('/register', data)

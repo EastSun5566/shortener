@@ -15,7 +15,7 @@ export function LoginRoute (): JSX.Element {
       navigate('/')
     } catch (error) {
       const { response } = error as ResponseError
-      setError(response?.data.message ?? 'Something went wrong. Please try again later.')
+      setError(response?.data.error ?? 'Login failed. Please try again.')
     }
   }
 

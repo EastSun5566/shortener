@@ -13,7 +13,8 @@ export function AuthForm ({
 }: AuthFormProps): JSX.Element {
   const {
     register: registerInput,
-    handleSubmit: createSubmitHandler
+    handleSubmit: createSubmitHandler,
+    formState: { isSubmitting }
   } = useForm({
     defaultValues: {
       email: '',
@@ -22,7 +23,7 @@ export function AuthForm ({
   })
 
   const handleSubmit = createSubmitHandler(async (values) => {
-    onSubmit(values)
+    await onSubmit(values)
   })
 
   return (
@@ -43,7 +44,9 @@ export function AuthForm ({
           {...registerInput('password', { required: true })}
         />
 
-        <button type="submit">{title}</button>
+        <button type="submit" disabled={isSubmitting}>
+          {isSubmitting ? 'Loading...' : title}
+        </button>
       </form>
 
       {error && <p className="text-red-500">{error}</p>}
