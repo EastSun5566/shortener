@@ -5,7 +5,7 @@ import { Link } from 'react-router-dom'
 import { createLink, getLink, type ResponseError } from '../services'
 import { useAuth } from '../hooks'
 
-export function RootRoute (): JSX.Element {
+export function RootRoute () {
   const { isAuthenticated, logout } = useAuth()
   const {
     register,

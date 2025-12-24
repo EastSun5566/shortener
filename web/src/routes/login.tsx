@@ -5,7 +5,7 @@ import { AuthForm, type AuthFormProps } from '../components'
 import { login, type ResponseError } from '../services'
 import { useAuth } from '../hooks'
 
-export function LoginRoute (): JSX.Element {
+export function LoginRoute () {
   const navigate = useNavigate()
   const { login: setAuth } = useAuth()
 

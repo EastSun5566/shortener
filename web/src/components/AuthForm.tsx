@@ -10,7 +10,7 @@ export function AuthForm ({
   title,
   onSubmit,
   error
-}: AuthFormProps): JSX.Element {
+}: AuthFormProps) {
   const {
     register: registerInput,
     handleSubmit: createSubmitHandler,

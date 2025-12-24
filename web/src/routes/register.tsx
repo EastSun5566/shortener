@@ -5,7 +5,7 @@ import { AuthForm, type AuthFormProps } from '../components'
 import { register, type ResponseError } from '../services'
 import { useAuth } from '../hooks'
 
-export function RegisterRoute (): JSX.Element {
+export function RegisterRoute () {
   const navigate = useNavigate()
   const { login } = useAuth()
 
