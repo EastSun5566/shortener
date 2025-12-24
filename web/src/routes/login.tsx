@@ -3,15 +3,17 @@ import { useNavigate } from 'react-router-dom'
 
 import { AuthForm, type AuthFormProps } from '../components'
 import { login, type ResponseError } from '../services'
+import { useAuth } from '../hooks'
 
 export function LoginRoute (): JSX.Element {
   const navigate = useNavigate()
+  const { login: setAuth } = useAuth()
 
   const [error, setError] = useState('')
   const handleSubmit = async (values: Parameters<AuthFormProps['onSubmit']>[0]) => {
     try {
       const { data } = await login(values)
-      localStorage.setItem('token', data.token)
+      setAuth(data.token)
       navigate('/')
     } catch (error) {
       const { response } = error as ResponseError

@@ -3,9 +3,10 @@ import { useForm } from 'react-hook-form'
 import { Link } from 'react-router-dom'
 
 import { createLink, getLink, type ResponseError } from '../services'
+import { useAuth } from '../hooks'
 
 export function RootRoute (): JSX.Element {
-  const [isLogin, setIsLogin] = useState(() => !!localStorage.getItem('token'))
+  const { isAuthenticated, logout } = useAuth()
   const {
     register,
     handleSubmit: createSubmitHandler,
@@ -18,6 +19,7 @@ export function RootRoute (): JSX.Element {
   })
   const [shortenUrls, setShortenUrls] = useState<string[]>([])
   const [error, setError] = useState('')
+  const [success, setSuccess] = useState('')
 
   const fetchLinks = useCallback(async () => {
     try {
@@ -31,17 +33,20 @@ export function RootRoute (): JSX.Element {
   }, [])
 
   useEffect(() => {
-    if (isLogin) {
+    if (isAuthenticated) {
       fetchLinks()
     }
-  }, [isLogin, fetchLinks])
+  }, [isAuthenticated, fetchLinks])
 
   const handleSubmit = createSubmitHandler(async (values) => {
     try {
       setError('')
+      setSuccess('')
       const { data } = await createLink(values)
-      setShortenUrls((shortenUrls) => [...shortenUrls, data.shortenUrl])
+      setShortenUrls((shortenUrls) => [data.shortenUrl, ...shortenUrls])
       reset()
+      setSuccess('Short link created successfully!')
+      setTimeout(() => { setSuccess('') }, 3000)
     } catch (error) {
       const { response } = error as ResponseError
       setError(response?.data.error ?? 'Failed to create short link. Please try again.')
@@ -49,8 +54,7 @@ export function RootRoute (): JSX.Element {
   })
 
   const handleLogout = () => {
-    localStorage.removeItem('token')
-    setIsLogin(false)
+    logout()
     setShortenUrls([])
   }
 
@@ -58,7 +62,7 @@ export function RootRoute (): JSX.Element {
     <>
     <nav className="fixed top-0 left-0 w-full p-4">
       <ul className="flex justify-end items-center">
-        {isLogin
+        {isAuthenticated
           ? (
             <>
               <li>
@@ -82,19 +86,38 @@ export function RootRoute (): JSX.Element {
         <input
           type="url"
           placeholder="Type URL here..."
-          {...register('originalUrl', { required: true })}
+          {...register('originalUrl', {
+            required: 'URL is required',
+            pattern: {
+              value: /^https?:\/\/.+/,
+              message: 'Must be a valid HTTP/HTTPS URL'
+            },
+            minLength: {
+              value: 10,
+              message: 'URL must be at least 10 characters'
+            },
+            maxLength: {
+              value: 2048,
+              message: 'URL must be less than 2048 characters'
+            }
+          })}
           autoFocus
         />
 
         <button
           type="submit"
           disabled={formState.isSubmitting}
+          className="disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            Shorten
+            {formState.isSubmitting ? 'Creating...' : 'Shorten'}
         </button>
       </form>
 
-      {error && <p className="text-red-500">{error}</p>}
+      {error && <p className="text-red-500 mb-4">{error}</p>}
+      {success && <p className="text-green-500 mb-4">{success}</p>}
+      {formState.errors.originalUrl && (
+        <p className="text-red-500 mb-4">{formState.errors.originalUrl.message}</p>
+      )}
 
       <ul className="max-h-40 overflow-y-scroll">
         {shortenUrls.map((shortenUrl) => (
