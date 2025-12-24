@@ -17,7 +17,7 @@ services:
     runtime: node
     region: singapore
     buildCommand: cd server && pnpm install --frozen-lockfile && pnpm run build
-    startCommand: cd server && pnpm run db:migrate && pnpm run start
+    startCommand: cd server && pnpm run db:migrate && node dist/src/main.js
     envVars:
       - key: DATABASE_URL
         fromDatabase:
