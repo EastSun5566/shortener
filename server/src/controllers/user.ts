@@ -7,6 +7,7 @@ import {
   signToken
 } from '../services'
 import { isValidEmail } from '../utils'
+import { config } from '../config'
 
 export async function handleRegister (
   request: FastifyRequest<{ Body: { email: string, password: string } }>,
@@ -28,8 +29,7 @@ export async function handleRegister (
   }
 
   // 3. hash password
-  const saltRounds = 10
-  const hashedPassword = await hash(password, saltRounds)
+  const hashedPassword = await hash(password, config.security.bcryptSaltRounds)
 
   // 4. save user to database
   const { id } = await createUser(email, hashedPassword)

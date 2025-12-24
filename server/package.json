@@ -3,30 +3,30 @@
   "private": true,
   "version": "0.0.0",
   "scripts": {
-    "dev": "nodemon -e ts -x ts-node src/main.ts",
+    "dev": "node --env-file=.env --import tsx src/main.ts",
     "migrate": "npx prisma migrate dev",
     "start": "pnpm run build && node dist",
-    "build": "tsc"
+    "build": "tsc",
+    "test": "node --env-file=.env.example --import tsx --test src/__tests__/**/*.test.ts"
   },
   "devDependencies": {
-    "@types/bcryptjs": "^2.4.6",
     "@types/jsonwebtoken": "^9.0.1",
-    "@types/node": "^18.15.11",
+    "@types/node": "^22.19.3",
     "fastify-tsconfig": "^1.0.1",
-    "nodemon": "^2.0.22",
     "pino-pretty": "^10.0.0",
-    "ts-node": "^10.9.1",
+    "tsx": "^4.21.0",
     "typescript": "^5.0.3"
   },
   "dependencies": {
-    "@fastify/cors": "^8.2.1",
-    "@fastify/sensible": "^5.2.0",
+    "@fastify/cors": "^11.2.0",
+    "@fastify/rate-limit": "^10.3.0",
+    "@fastify/sensible": "^6.0.4",
     "@prisma/client": "^5.22.0",
-    "bcryptjs": "^2.4.3",
-    "dotenv": "^16.0.3",
-    "fastify": "^4.15.0",
+    "bcryptjs": "^3.0.3",
+    "fastify": "^5.6.2",
     "jsonwebtoken": "^9.0.0",
     "prisma": "^5.22.0",
-    "redis": "^4.6.5"
+    "redis": "^4.6.5",
+    "zod": "^4.2.1"
   }
 }

@@ -52,7 +52,7 @@ export async function handleListLinks (
   // 2. get links from database
   const links = await findLinksByUserId(verifyToken(token).id)
 
-  reply.send(links.map(({ shorten_key: shortenKey }) => ({
+  reply.send(links.map(({ shorten_key: shortenKey }: { shorten_key: string }) => ({
     shortenUrl: `http://${request.hostname}/${shortenKey}`
   })))
 }

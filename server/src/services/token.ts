@@ -1,4 +1,5 @@
 import { sign, verify, type JwtPayload } from 'jsonwebtoken'
+import { config } from '../config'
 
 interface TokenPayload {
   email: string
@@ -6,9 +7,11 @@ interface TokenPayload {
 }
 
 export function signToken (payload: TokenPayload) {
-  return sign(payload, process.env.JWT_SECRET ?? 'secret')
+  return sign(payload, config.security.jwtSecret, {
+    expiresIn: config.security.jwtExpiresIn
+  })
 }
 
 export function verifyToken (token: string) {
-  return verify(token, process.env.JWT_SECRET ?? 'secret') as (TokenPayload & JwtPayload)
+  return verify(token, config.security.jwtSecret) as (TokenPayload & JwtPayload)
 }

@@ -1,8 +1,7 @@
 import createApp from 'fastify'
 import cors from '@fastify/cors'
 import sensible from '@fastify/sensible'
-
-import { config as loadEnv } from 'dotenv'
+import rateLimit from '@fastify/rate-limit'
 
 import {
   linkRoute,
@@ -11,8 +10,6 @@ import {
 import { config } from './config'
 
 export async function main (): Promise<void> {
-  loadEnv()
-
   const app = createApp({
     logger: {
       transport: {
@@ -22,8 +19,18 @@ export async function main (): Promise<void> {
   })
 
   await app.register(sensible)
+  await app.register(rateLimit, {
+    max: 100,
+    timeWindow: '15 minutes',
+    errorResponseBuilder: () => ({
+      statusCode: 429,
+      error: 'Too Many Requests',
+      message: 'Rate limit exceeded, please try again later.'
+    })
+  })
   await app.register(cors, {
-    origin: '*'
+    origin: config.security.corsOrigins,
+    credentials: true
   })
 
   app.get('/', () => 'Welcome to the URL Shortener API')
