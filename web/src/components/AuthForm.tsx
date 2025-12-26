@@ -4,17 +4,18 @@ export interface AuthFormProps {
   title: string
   onSubmit: (values: { email: string, password: string }) => Promise<void>
   error?: string
+  isLoading?: boolean
 }
 
 export function AuthForm ({
   title,
   onSubmit,
-  error
+  error,
+  isLoading = false
 }: AuthFormProps) {
   const {
     register: registerInput,
-    handleSubmit: createSubmitHandler,
-    formState: { isSubmitting }
+    handleSubmit: createSubmitHandler
   } = useForm({
     defaultValues: {
       email: '',
@@ -44,8 +45,8 @@ export function AuthForm ({
           {...registerInput('password', { required: true })}
         />
 
-        <button type="submit" disabled={isSubmitting}>
-          {isSubmitting ? 'Loading...' : title}
+        <button type="submit" disabled={isLoading}>
+          {isLoading ? 'Loading...' : title}
         </button>
       </form>
 

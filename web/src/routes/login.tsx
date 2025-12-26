@@ -1,31 +1,24 @@
-import { useState } from 'react'
-import { useNavigate } from 'react-router-dom'
-
-import { AuthForm, type AuthFormProps } from '../components'
-import { login, type ResponseError } from '../services'
-import { useAuth } from '../hooks'
+import { AuthForm } from '../components'
+import { useLoginMutation } from '../hooks'
+import type { ResponseError } from '../services'
 
 export function LoginRoute () {
-  const navigate = useNavigate()
-  const { login: setAuth } = useAuth()
+  const mutation = useLoginMutation()
 
-  const [error, setError] = useState('')
-  const handleSubmit = async (values: Parameters<AuthFormProps['onSubmit']>[0]) => {
-    try {
-      const { data } = await login(values)
-      setAuth(data.token)
-      navigate('/')
-    } catch (error) {
-      const { response } = error as ResponseError
-      setError(response?.data.error ?? 'Login failed. Please try again.')
-    }
+  const handleSubmit = async (values: { email: string, password: string }) => {
+    mutation.mutate(values)
   }
+
+  const error = mutation.error
+    ? ((mutation.error as ResponseError).response?.data.error ?? 'Login failed. Please try again.')
+    : ''
 
   return (
     <AuthForm
       title="Login"
       onSubmit={handleSubmit}
       error={error}
+      isLoading={mutation.isPending}
     />
   )
 }
