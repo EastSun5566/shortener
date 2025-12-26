@@ -1,23 +1,5 @@
 @import "tailwindcss";
 
-/*
-  The default border color has changed to `currentcolor` in Tailwind CSS v4,
-  so we've added these compatibility styles to make sure everything still
-  looks the same as it did with Tailwind CSS v3.
-
-  If we ever want to remove these styles, we need to add an explicit border
-  color utility to any element that depends on these defaults.
-*/
-@layer base {
-  *,
-  ::after,
-  ::before,
-  ::backdrop,
-  ::file-selector-button {
-    border-color: var(--color-gray-200, currentcolor);
-  }
-}
-
 :root {
   font-family: Inter, system-ui, Avenir, Helvetica, Arial, sans-serif;
   line-height: 1.5;
@@ -35,30 +17,19 @@
 }
 
 a {
-  font-weight: 500;
   color: #646cff;
-  text-decoration: inherit;
-}
-a:hover {
-  color: #535bf2;
-}
 
-h1 {
-  font-size: 3.2em;
-  line-height: 1.1;
+  &:hover {
+    color: #535bf2;
+  }
 }
 
 input {
-  @apply w-full outline-hidden rounded-xl h-12 px-3 focus:ring-2 ring-indigo-400 ring-offset-2 mb-3;
+  @apply w-full border outline-hidden rounded-xl h-12 px-3 focus:ring-2 ring-indigo-400 ring-offset-2 mb-3;
 }
 
 button {
   @apply px-5 h-12 rounded-xl bg-linear-to-br from-indigo-600 to-indigo-700 text-white focus:ring-2 ring-indigo-400 ring-offset-2 disabled:opacity-50;
-}
-
-#root {
-  min-height: 100dvh;
-  @apply flex justify-center items-center;
 }
 
 @media (prefers-color-scheme: light) {
@@ -72,4 +43,9 @@ button {
   button {
     background-color: #f9f9f9;
   }
+}
+
+#root {
+  min-height: 100dvh;
+  @apply flex justify-center items-center;
 }

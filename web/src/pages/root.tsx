@@ -36,9 +36,9 @@ export function RootRoute () {
       <Nav />
 
       <main className="text-center">
-        <h1 className="mb-10">🔗</h1>
+        <h1 className="text-5xl mb-8">🔗</h1>
 
-        <form className="mb-10" onSubmit={handleSubmit}>
+        <form className="mb-4" onSubmit={handleSubmit}>
           <input
             type="url"
             placeholder="URL..."
@@ -69,12 +69,12 @@ export function RootRoute () {
           </button>
         </form>
 
-        {error && <p className="text-red-500 mb-4">{error}</p>}
+        {error && <small className="text-red-500 mb-4">{error}</small>}
         {createMutation.isSuccess && (
-          <p className="text-green-500 mb-4">Short link created successfully!</p>
+          <small className="text-green-500 mb-4">Short link created successfully!</small>
         )}
         {formState.errors.originalUrl && (
-          <p className="text-red-500 mb-4">{formState.errors.originalUrl.message}</p>
+          <small className="text-red-500 mb-4">{formState.errors.originalUrl.message}</small>
         )}
 
         {isLoading && <p className="text-gray-500 mb-4">Loading links...</p>}

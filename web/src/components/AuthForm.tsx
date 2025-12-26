@@ -30,9 +30,9 @@ export function AuthForm ({
 
   return (
     <section className="text-center">
-      <h1 className="mb-10">{title}</h1>
+      <h1 className='text-5xl mb-8'>{title}</h1>
 
-      <form className="mb-10" onSubmit={handleSubmit}>
+      <form className="mb-4" onSubmit={handleSubmit}>
         <input
           type="email"
           placeholder="email..."
@@ -67,13 +67,13 @@ export function AuthForm ({
         </button>
       </form>
 
-      {error && <p className="text-red-500 mb-4">{error}</p>}
+      {error && <small className="text-red-500 mb-4">{error}</small>}
       
       {formState.errors.email && (
-          <p className="text-red-500 mb-4">{formState.errors.email.message}</p>
+          <small className="text-red-500 mb-4">{formState.errors.email.message}</small>
         )}
       {formState.errors.password && (
-          <p className="text-red-500">{formState.errors.password.message}</p>
+          <small className="text-red-500 mb-4">{formState.errors.password.message}</small>
         )}
     </section>
   )
