@@ -1,12 +1,12 @@
-import { AuthForm } from '../components'
+import { AuthForm, Nav } from '../components'
 import { useRegisterMutation } from '../hooks'
-import type { ResponseError } from '../services'
+import type { ResponseError } from '../api'
 
 export function RegisterRoute () {
   const mutation = useRegisterMutation()
 
   const handleSubmit = async (values: { email: string, password: string }) => {
-    mutation.mutate(values)
+    await mutation.mutateAsync(values)
   }
 
   const error = mutation.error
@@ -14,12 +14,18 @@ export function RegisterRoute () {
     : ''
 
   return (
-    <AuthForm
-      title="Register"
-      onSubmit={handleSubmit}
-      error={error}
-      isLoading={mutation.isPending}
-    />
+    <>
+      <Nav />
+
+      <main>
+        <AuthForm
+          title="Register"
+          onSubmit={handleSubmit}
+          error={error}
+          isLoading={mutation.isPending}
+        />
+      </main>
+    </>
   )
 }
 

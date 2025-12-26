@@ -1,10 +1,10 @@
 import { useForm } from 'react-hook-form'
-import { Link } from 'react-router-dom'
-import { useAuth, useLinks, useCreateLinkMutation } from '../hooks'
-import type { ResponseError } from '../services'
+
+import { Nav } from '../components/Nav'
+import { useLinks, useCreateLinkMutation } from '../hooks'
+import type { ResponseError } from '../api'
 
 export function RootRoute () {
-  const { isAuthenticated, logout } = useAuth()
   const { data: links, isLoading } = useLinks()
   const createMutation = useCreateLinkMutation()
 
@@ -19,7 +19,7 @@ export function RootRoute () {
     }
   })
 
-  const handleSubmit = createSubmitHandler(async (values) => {
+  const handleSubmit = createSubmitHandler((values) => {
     createMutation.mutate(values, {
       onSuccess: () => {
         reset()
@@ -33,22 +33,7 @@ export function RootRoute () {
 
   return (
     <>
-      <nav className="fixed top-0 left-0 w-full p-4">
-        <ul className="flex justify-end items-center">
-          {isAuthenticated
-            ? (
-              <li>
-                <button onClick={logout}>logout</button>
-              </li>
-              )
-            : (
-              <li>
-                <Link className="mr-4" to="/login">Login</Link>
-                <Link to="/register">Register</Link>
-              </li>
-              )}
-        </ul>
-      </nav>
+      <Nav />
 
       <main className="text-center">
         <h1 className="mb-10">🔗</h1>
@@ -56,7 +41,7 @@ export function RootRoute () {
         <form className="mb-10" onSubmit={handleSubmit}>
           <input
             type="url"
-            placeholder="Type URL here..."
+            placeholder="URL..."
             {...register('originalUrl', {
               required: 'URL is required',
               pattern: {

@@ -12,7 +12,7 @@ import {
   RootRoute,
   LoginRoute,
   RegisterRoute
-} from './routes'
+} from './pages'
 
 const queryClient = new QueryClient({
   defaultOptions: {

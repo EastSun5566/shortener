@@ -1,5 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { createLink, getLink } from '../services'
+import { createLink, getLink } from '../api'
 import type { CreateLinkData } from '../types'
 
 const LINKS_QUERY_KEY = ['links']
