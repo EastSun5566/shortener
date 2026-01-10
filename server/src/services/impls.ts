@@ -31,11 +31,19 @@ export const linkService: LinkService = {
 export const cacheService: CacheService = {
   get: async (shortenKey: string) => {
     const client = await getCacheClient()
-    return await client.get(`link:${shortenKey}`)
+    const data = await client.get(`link:${shortenKey}`)
+    if (!data) return null
+    try {
+      return JSON.parse(data)
+    } catch {
+      // Fallback for old cache format (plain string)
+      return { originalUrl: data, userId: null }
+    }
   },
-  set: async (shortenKey: string, originalUrl: string) => {
+  set: async (shortenKey: string, originalUrl: string, userId?: number | null) => {
     const client = await getCacheClient()
-    await client.setEx(`link:${shortenKey}`, config.cache.linkTtl, originalUrl)
+    const data = JSON.stringify({ originalUrl, userId: userId ?? null })
+    await client.setEx(`link:${shortenKey}`, config.cache.linkTtl, data)
   }
 }
 

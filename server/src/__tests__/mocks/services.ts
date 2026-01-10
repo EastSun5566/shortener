@@ -38,7 +38,7 @@ export class MockLinkService implements LinkService {
 
   findLinkByShortenKey = async (shortenKey: string) => {
     const link = this.links.find(l => l.shortenKey === shortenKey)
-    return link ? { originalUrl: link.originalUrl, userId: link.userId } : undefined
+    return link ? { originalUrl: link.originalUrl, userId: link.userId ?? null } : undefined
   }
 
   findLinkByOriginalUrl = async (originalUrl: string, userId?: number) => {
@@ -48,7 +48,7 @@ export class MockLinkService implements LinkService {
       }
       return l.originalUrl === originalUrl
     })
-    return link ? { originalUrl: link.originalUrl, shortenKey: link.shortenKey, userId: link.userId } : undefined
+    return link ? { originalUrl: link.originalUrl, shortenKey: link.shortenKey, userId: link.userId ?? null } : undefined
   }
 
   findLinksByUserId = async (userId: number) => {
@@ -69,14 +69,14 @@ export class MockLinkService implements LinkService {
 }
 
 export class MockCacheService implements CacheService {
-  private readonly cache = new Map<string, string>()
+  private readonly cache = new Map<string, { originalUrl: string, userId: number | null }>()
 
   get = async (shortenKey: string) => {
     return this.cache.get(shortenKey) ?? null
   }
 
-  set = async (shortenKey: string, originalUrl: string) => {
-    this.cache.set(shortenKey, originalUrl)
+  set = async (shortenKey: string, originalUrl: string, userId?: number | null) => {
+    this.cache.set(shortenKey, { originalUrl, userId: userId ?? null })
   }
 
   // Test helper

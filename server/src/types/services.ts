@@ -5,14 +5,14 @@ export interface UserService {
 
 export interface LinkService {
   createLink: (data: { originalUrl: string, shortenKey: string, userId?: number }) => Promise<void>
-  findLinkByShortenKey: (shortenKey: string) => Promise<{ originalUrl: string, userId?: number } | undefined>
-  findLinkByOriginalUrl: (originalUrl: string, userId?: number) => Promise<{ originalUrl: string, shortenKey: string, userId?: number } | undefined>
+  findLinkByShortenKey: (shortenKey: string) => Promise<{ originalUrl: string, userId: number | null } | undefined>
+  findLinkByOriginalUrl: (originalUrl: string, userId?: number) => Promise<{ originalUrl: string, shortenKey: string, userId: number | null } | undefined>
   findLinksByUserId: (userId: number) => Promise<{ shortenKey: string }[]>
 }
 
 export interface CacheService {
-  get: (shortenKey: string) => Promise<string | null>
-  set: (shortenKey: string, originalUrl: string) => Promise<void>
+  get: (shortenKey: string) => Promise<{ originalUrl: string, userId: number | null } | null>
+  set: (shortenKey: string, originalUrl: string, userId?: number | null) => Promise<void>
 }
 
 export interface TokenService {

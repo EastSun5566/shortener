@@ -43,23 +43,6 @@ export async function createShortenKey () {
   return shortenKey
 }
 
-const PREFIX_KEY = 'api:link'
-const CACHE_TTL = 60 * 60 * 24 * 7 // 7 days in seconds
-
-export async function setLinkFromCache (shortenKey: string, originalUrl: string) {
-  const cache = await getCacheClient()
-
-  const key = `${PREFIX_KEY}:${shortenKey}`
-  return await cache.set(key, originalUrl, { EX: CACHE_TTL })
-}
-
-export async function getLinkFromCache (shortenKey: string) {
-  const cache = await getCacheClient()
-
-  const key = `${PREFIX_KEY}:${shortenKey}`
-  return await cache.get(key)
-}
-
 export async function findLinkByShortenKey (shortenKey: string) {
   const result = await db.select().from(links).where(eq(links.shortenKey, shortenKey)).limit(1)
   return result[0] ?? null

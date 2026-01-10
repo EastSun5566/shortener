@@ -20,30 +20,20 @@ pool.on('error', (err) => {
 export const db = drizzle({ client: pool, schema })
 
 export async function initDb() {
+  console.log('🔧 Initializing database connection...')
+  
+  const client = await pool.connect()
   try {
-    console.log('🔧 Initializing database connection...')
-    
-    const client = await pool.connect()
-    try {
-      const result = await client.query<{ now: Date }>('SELECT NOW()')
-      console.log(`✅ Database connected successfully at ${result.rows[0].now.toISOString()}`)
-    } finally {
-      client.release()
-    }
-  } catch (error) {
-    console.error('❌ Failed to initialize database:', error)
-    throw error
+    const result = await client.query<{ now: Date }>('SELECT NOW()')
+    console.log(`✅ Database connected successfully at ${result.rows[0].now.toISOString()}`)
+  } finally {
+    client.release()
   }
 }
 
 export async function closeDb() {
-  try {
-    await pool.end()
-    console.log('✅ Database connection closed')
-  } catch (error) {
-    console.error('❌ Error closing database:', error)
-    throw error
-  }
+  await pool.end()
+  console.log('✅ Database connection closed')
 }
 
 export async function checkDbHealth() {

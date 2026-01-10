@@ -2,8 +2,8 @@ import { serve } from '@hono/node-server'
 import { createApp } from './factories/createApp.js'
 import { config } from './config.js'
 import { validateEnv } from './utils.js'
-import { closeCacheClient, initCache } from './services/cache.js'
-import { closeDb, initDb } from './services/db.js'
+import { closeCache, initCache } from './services/cache.js'
+import { closeDb, initDb } from './drizzle/db.js'
 import { initBloomFilter } from './services/bloomFilter.js'
 import {
   userService,
@@ -43,7 +43,7 @@ export async function main (): Promise<void> {
     console.log(`\n${signal} received, closing server gracefully...`)
     
     try {
-      await closeCacheClient()
+      await closeCache()
       await closeDb()
       console.log('✅ Graceful shutdown completed')
       process.exit(0)

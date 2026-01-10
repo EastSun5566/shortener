@@ -1,6 +1,6 @@
 import { Hono } from 'hono'
 import { checkCacheHealth } from '../services/cache.js'
-import { checkDbHealth } from '../services/db.js'
+import { checkDbHealth } from '../drizzle/db.js'
 
 export const healthRoute = new Hono()
   .get('/', (ctx) => ctx.text('OK'))

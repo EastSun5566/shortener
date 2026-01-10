@@ -45,7 +45,7 @@ describe('Link Routes - Integration Tests', () => {
 
       // Verify link was cached
       const cached = await deps.cacheService.get('key000001')
-      assert.strictEqual(cached, 'https://example.com/long-url')
+      assert.deepStrictEqual(cached, { originalUrl: 'https://example.com/long-url', userId: 1 })
     })
 
     it('should create a short link for unauthenticated user', async () => {
@@ -307,14 +307,14 @@ describe('Link Routes - Integration Tests', () => {
       const deps = createMockDependencies()
       const app = createApp(deps)
 
-      // Seed cache
+      // Seed cache (anonymous link, no userId)
       await deps.cacheService.set('testkey', 'https://example.com')
 
       const res = await app.request('/testkey', {
         redirect: 'manual'
       })
 
-      assert.strictEqual(res.status, 302)
+      assert.strictEqual(res.status, 301)
       assert.strictEqual(res.headers.get('location'), 'https://example.com')
     })
 
@@ -338,7 +338,7 @@ describe('Link Routes - Integration Tests', () => {
 
       // Verify it was cached
       const cached = await deps.cacheService.get('dbkey')
-      assert.strictEqual(cached, 'https://example.com/from-db')
+      assert.deepStrictEqual(cached, { originalUrl: 'https://example.com/from-db', userId: null })
     })
 
     it('should use 301 redirect for anonymous links', async () => {

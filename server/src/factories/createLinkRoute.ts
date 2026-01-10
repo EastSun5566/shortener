@@ -60,7 +60,7 @@ export function createLinkRoute (deps: AppDependencies) {
         shortenKey,
         ...(userId && { userId })
       })
-      await cacheService.set(shortenKey, originalUrl)
+      await cacheService.set(shortenKey, originalUrl, userId)
 
       return ctx.json({
         shortenUrl: `${new URL(ctx.req.url).origin}/${shortenKey}`,
@@ -71,12 +71,11 @@ export function createLinkRoute (deps: AppDependencies) {
       const { shortenKey } = ctx.req.param()
 
       // get from cache
-      const cachedUrl = await cacheService.get(shortenKey)
-      if (cachedUrl) {
-            // If the link belongs to a logged-in user, use 302 (for tracking)
-            // Otherwise, use 301 (to reduce server load)
-            // Note: We cannot determine userId from cache, so use 302 as a conservative approach
-        return ctx.redirect(cachedUrl, 302)
+      const cached = await cacheService.get(shortenKey)
+      if (cached) {
+        // Use 302 for user links (tracking), 301 for anonymous links (performance)
+        const statusCode = cached.userId ? 302 : 301
+        return ctx.redirect(cached.originalUrl, statusCode)
       }
 
       // get from database
@@ -86,7 +85,7 @@ export function createLinkRoute (deps: AppDependencies) {
       }
 
       // add to cache
-      await cacheService.set(shortenKey, link.originalUrl)
+      await cacheService.set(shortenKey, link.originalUrl, link.userId)
 
       // If the link belongs to a logged-in user, use 302 (for tracking)
       // Otherwise, use 301 (to reduce server load)
