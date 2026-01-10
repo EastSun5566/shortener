@@ -1,6 +1,7 @@
 import { defineConfig, devices } from '@playwright/test';
 
 const WEB_PORT = process.env.WEB_PORT || '3001';
+const SERVER_PORT = process.env.SERVER_PORT || '8080';
 
 export default defineConfig({
   testDir: './e2e',
@@ -31,5 +32,8 @@ export default defineConfig({
     command: 'pnpm run dev',
     url: `http://localhost:${WEB_PORT}`,
     reuseExistingServer: !process.env.CI,
+    env: {
+      VITE_API_URL: process.env.VITE_API_URL || `http://localhost:${SERVER_PORT}`,
+    },
   },
 });
