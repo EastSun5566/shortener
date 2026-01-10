@@ -125,7 +125,7 @@ export class MockUtilsService implements UtilsService {
   }
 
   incrementClickCount = async (shortenKey: string): Promise<number> => {
-    const current = this.clickCounts.get(shortenKey) || 0
+    const current = this.clickCounts.get(shortenKey) ?? 0
     const newCount = current + 1
     this.clickCounts.set(shortenKey, newCount)
     return newCount
