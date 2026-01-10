@@ -225,6 +225,8 @@ jobs:
           exit 1
 
       - name: Run E2E tests
+        env:
+          VITE_API_URL: http://localhost:${{ env.SERVER_PORT }}
         run: pnpm run web:test:e2e
 
       - name: Stop server
