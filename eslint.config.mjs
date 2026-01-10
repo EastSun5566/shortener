@@ -19,6 +19,11 @@ export default defineConfig([
       '**/postcss.config.js',
       '**/tailwind.config.js',
       '**/vite.config.ts',
+      // Playwright E2E tests
+      '**/e2e/**',
+      '**/playwright.config.ts',
+      '**/test-results/**',
+      '**/playwright-report/**',
     ],
   },
 
