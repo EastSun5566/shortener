@@ -197,6 +197,7 @@ jobs:
           JWT_SECRET=${{ env.JWT_SECRET }}
           NODE_ENV=${{ env.NODE_ENV }}
           PORT=${{ env.SERVER_PORT }}
+          CORS_ORIGINS=http://localhost:${{ env.WEB_PORT }}
           EOF
           echo "Created .env file with:"
           cat server/.env
@@ -224,10 +225,30 @@ jobs:
           cat server.log || echo "No server log found"
           exit 1
 
+      - name: Debug - Test API connectivity
+        run: |
+          echo "=== Testing API endpoints ==="
+          echo "1. Health check:"
+          curl -v http://localhost:${{ env.SERVER_PORT }}/health
+          echo -e "\n2. Test CORS preflight to register endpoint:"
+          curl -v -X OPTIONS http://localhost:${{ env.SERVER_PORT }}/api/users/register \
+            -H "Origin: http://localhost:${{ env.WEB_PORT }}" \
+            -H "Access-Control-Request-Method: POST"
+          echo -e "\n3. Test register endpoint with sample data:"
+          curl -v -X POST http://localhost:${{ env.SERVER_PORT }}/api/users/register \
+            -H "Content-Type: application/json" \
+            -H "Origin: http://localhost:${{ env.WEB_PORT }}" \
+            -d '{"email":"test@example.com","password":"TestPass123"}' || echo "Register failed"
+          echo -e "\n=== Current server logs ==="
+          tail -50 server.log
+
       - name: Run E2E tests
         env:
           VITE_API_URL: http://localhost:${{ env.SERVER_PORT }}
-        run: pnpm run web:test:e2e
+        run: |
+          echo "=== Starting E2E tests ==="
+          echo "VITE_API_URL: $VITE_API_URL"
+          pnpm run web:test:e2e || (echo "=== E2E Test Failed - Server Logs ===" && tail -100 server.log && exit 1)
 
       - name: Stop server
         if: always()
