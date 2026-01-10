@@ -2,7 +2,9 @@ import { serve } from '@hono/node-server'
 import { createApp } from './factories/createApp.js'
 import { config } from './config.js'
 import { validateEnv } from './utils.js'
-import { closeCacheClient } from './services/cache.js'
+import { closeCacheClient, initCache } from './services/cache.js'
+import { closeDb, initDb } from './services/db.js'
+import { initBloomFilter } from './services/bloomFilter.js'
 import {
   userService,
   linkService,
@@ -20,17 +22,37 @@ const app = createApp({
   config
 })
 
-// eslint-disable-next-line @typescript-eslint/require-await
+
 export async function main (): Promise<void> {
-  // Validate environment
   validateEnv()
+
+  console.log('🚀 Initializing services...')
+  try {
+    await initDb()
+    await initCache()
+    await initBloomFilter()
+    
+    console.log('✅ All services initialized successfully')
+  } catch (error) {
+    console.error('❌ Failed to initialize services:', error)
+    process.exit(1)
+  }
   
   // Graceful shutdown handler
   const shutdown = async (signal: string) => {
     console.log(`\n${signal} received, closing server gracefully...`)
-    await closeCacheClient()
-    process.exit(0)
+    
+    try {
+      await closeCacheClient()
+      await closeDb()
+      console.log('✅ Graceful shutdown completed')
+      process.exit(0)
+    } catch (error) {
+      console.error('❌ Error during shutdown:', error)
+      process.exit(1)
+    }
   }
+  
   process.on('SIGTERM', async () => { await shutdown('SIGTERM') })
   process.on('SIGINT', async () => { await shutdown('SIGINT') })
 

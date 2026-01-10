@@ -1,6 +1,6 @@
 import { Hono } from 'hono'
-import { getCacheClient } from '../services/cache.js'
-import { getDbClient } from '../services/db.js'
+import { checkCacheHealth } from '../services/cache.js'
+import { checkDbHealth } from '../services/db.js'
 
 export const healthRoute = new Hono()
   .get('/', (ctx) => ctx.text('OK'))
@@ -14,9 +14,8 @@ export const healthRoute = new Hono()
 
     // Check database connection
     try {
-      const db = getDbClient()
-      await db.execute('SELECT 1')
-      checks.database = 'healthy'
+      const isHealthy = await checkDbHealth()
+      checks.database = isHealthy ? 'healthy' : 'unhealthy'
     } catch (error) {
       checks.database = 'unhealthy'
       console.error('Database health check failed:', error)
@@ -24,9 +23,8 @@ export const healthRoute = new Hono()
 
     // Check Redis connection
     try {
-      const cache = await getCacheClient()
-      await cache.ping()
-      checks.cache = 'healthy'
+      const isHealthy = await checkCacheHealth()
+      checks.cache = isHealthy ? 'healthy' : 'unhealthy'
     } catch (error) {
       checks.cache = 'unhealthy'
       console.error('Cache health check failed:', error)

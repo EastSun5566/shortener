@@ -38,7 +38,17 @@ export class MockLinkService implements LinkService {
 
   findLinkByShortenKey = async (shortenKey: string) => {
     const link = this.links.find(l => l.shortenKey === shortenKey)
-    return link ? { originalUrl: link.originalUrl } : undefined
+    return link ? { originalUrl: link.originalUrl, userId: link.userId } : undefined
+  }
+
+  findLinkByOriginalUrl = async (originalUrl: string, userId?: number) => {
+    const link = this.links.find(l => {
+      if (userId !== undefined) {
+        return l.originalUrl === originalUrl && l.userId === userId
+      }
+      return l.originalUrl === originalUrl
+    })
+    return link ? { originalUrl: link.originalUrl, shortenKey: link.shortenKey, userId: link.userId } : undefined
   }
 
   findLinksByUserId = async (userId: number) => {

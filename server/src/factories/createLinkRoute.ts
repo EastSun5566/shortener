@@ -40,25 +40,31 @@ export function createLinkRoute (deps: AppDependencies) {
     })
     .post('/links', linkRateLimiter, optionalAuth, zValidator('json', createLinkSchema), async (ctx) => {
       const { originalUrl } = ctx.req.valid('json')
-
-      // create shortenKey
-      const shortenKey = await utilsService.createShortenKey()
-
-      // get user id from context if authenticated
       const userId = ctx.get('userId')
 
-      // insert into database
+      // check for existing link
+      const existingLink = await linkService.findLinkByOriginalUrl(originalUrl, userId)
+      if (existingLink) {
+        // return existing shorten URL to avoid duplication
+        return ctx.json({
+          shortenUrl: `${new URL(ctx.req.url).origin}/${existingLink.shortenKey}`,
+          existed: true
+        }, 200)
+      }
+
+      // create new shorten key
+      const shortenKey = await utilsService.createShortenKey()
+
       await linkService.createLink({
         originalUrl,
         shortenKey,
         ...(userId && { userId })
       })
-
-      // add to cache
       await cacheService.set(shortenKey, originalUrl)
 
       return ctx.json({
-        shortenUrl: `${new URL(ctx.req.url).origin}/${shortenKey}`
+        shortenUrl: `${new URL(ctx.req.url).origin}/${shortenKey}`,
+        existed: false
       }, 201)
     })
     .get('/:shortenKey', async (ctx) => {
@@ -67,7 +73,10 @@ export function createLinkRoute (deps: AppDependencies) {
       // get from cache
       const cachedUrl = await cacheService.get(shortenKey)
       if (cachedUrl) {
-        return ctx.redirect(cachedUrl)
+            // If the link belongs to a logged-in user, use 302 (for tracking)
+            // Otherwise, use 301 (to reduce server load)
+            // Note: We cannot determine userId from cache, so use 302 as a conservative approach
+        return ctx.redirect(cachedUrl, 302)
       }
 
       // get from database
@@ -79,6 +88,9 @@ export function createLinkRoute (deps: AppDependencies) {
       // add to cache
       await cacheService.set(shortenKey, link.originalUrl)
 
-      return ctx.redirect(link.originalUrl)
+      // If the link belongs to a logged-in user, use 302 (for tracking)
+      // Otherwise, use 301 (to reduce server load)
+      const statusCode = link.userId ? 302 : 301
+      return ctx.redirect(link.originalUrl, statusCode)
     })
 }

@@ -73,10 +73,31 @@ export async function getCacheClient (): Promise<RedisClientType> {
   }
 }
 
-export async function closeCacheClient (): Promise<void> {
+export async function initCache() {
+  try {
+    console.log('🔧 Initializing Redis connection...')
+    await getCacheClient()
+    console.log('✅ Redis connected and ready')
+  } catch (error) {
+    console.error('❌ Failed to initialize Redis:', error)
+    throw error
+  }
+}
+
+export async function checkCacheHealth() {
+  try {
+    if (!client?.isOpen) return false
+    await client.ping()
+    return true
+  } catch {
+    return false
+  }
+}
+
+export async function closeCacheClient () {
   if (client?.isOpen) {
     await client.quit()
     client = null
-    console.log('Redis: Connection closed')
+    console.log('✅ Redis connection closed')
   }
 }

@@ -24,6 +24,7 @@ export const linkService: LinkService = {
     await linkSvc.createLink(data)
   },
   findLinkByShortenKey: linkSvc.findLinkByShortenKey,
+  findLinkByOriginalUrl: linkSvc.findLinkByOriginalUrl,
   findLinksByUserId: linkSvc.findLinksByUserId
 }
 

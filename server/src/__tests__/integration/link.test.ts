@@ -125,6 +125,113 @@ describe('Link Routes - Integration Tests', () => {
 
       assert.strictEqual(res.status, 400)
     })
+
+    it('should return existing short URL for duplicate originalUrl (authenticated)', async () => {
+      const deps = createMockDependencies()
+      const app = createApp(deps)
+
+      // Register and get token
+      const registerRes = await app.request('/register', {
+        method: 'POST',
+        body: JSON.stringify({
+          email: 'user@example.com',
+          password: 'Password123'
+        }),
+        headers: new Headers({ 'Content-Type': 'application/json' })
+      })
+      const { token } = await registerRes.json() as { token: string }
+
+      // Create first link
+      const firstRes = await app.request('/links', {
+        method: 'POST',
+        body: JSON.stringify({
+          originalUrl: 'https://example.com/duplicate'
+        }),
+        headers: new Headers({
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`
+        })
+      })
+
+      assert.strictEqual(firstRes.status, 201)
+      const firstData = await firstRes.json() as { shortenUrl: string, existed: boolean }
+      assert.strictEqual(firstData.existed, false)
+
+      // Try to create duplicate link
+      const secondRes = await app.request('/links', {
+        method: 'POST',
+        body: JSON.stringify({
+          originalUrl: 'https://example.com/duplicate'
+        }),
+        headers: new Headers({
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`
+        })
+      })
+
+      assert.strictEqual(secondRes.status, 200)
+      const secondData = await secondRes.json() as { shortenUrl: string, existed: boolean }
+      assert.strictEqual(secondData.existed, true)
+      assert.strictEqual(secondData.shortenUrl, firstData.shortenUrl)
+    })
+
+    it('should create different short URLs for same originalUrl by different users', async () => {
+      const deps = createMockDependencies()
+      const app = createApp(deps)
+
+      // Register first user
+      const register1 = await app.request('/register', {
+        method: 'POST',
+        body: JSON.stringify({
+          email: 'user1@example.com',
+          password: 'Password123'
+        }),
+        headers: new Headers({ 'Content-Type': 'application/json' })
+      })
+      const { token: token1 } = await register1.json() as { token: string }
+
+      // Register second user
+      const register2 = await app.request('/register', {
+        method: 'POST',
+        body: JSON.stringify({
+          email: 'user2@example.com',
+          password: 'Password123'
+        }),
+        headers: new Headers({ 'Content-Type': 'application/json' })
+      })
+      const { token: token2 } = await register2.json() as { token: string }
+
+      // User 1 creates link
+      const res1 = await app.request('/links', {
+        method: 'POST',
+        body: JSON.stringify({
+          originalUrl: 'https://example.com/shared'
+        }),
+        headers: new Headers({
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token1}`
+        })
+      })
+
+      const data1 = await res1.json() as { shortenUrl: string }
+
+      // User 2 creates link with same URL
+      const res2 = await app.request('/links', {
+        method: 'POST',
+        body: JSON.stringify({
+          originalUrl: 'https://example.com/shared'
+        }),
+        headers: new Headers({
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token2}`
+        })
+      })
+
+      const data2 = await res2.json() as { shortenUrl: string }
+
+      // Different users should get different short URLs
+      assert.notStrictEqual(data1.shortenUrl, data2.shortenUrl)
+    })
   })
 
   describe('GET /links', () => {
@@ -216,7 +323,7 @@ describe('Link Routes - Integration Tests', () => {
       const app = createApp(deps)
       const linkService = deps.linkService as MockLinkService
 
-      // Seed database
+      // Seed database (without userId, should use 301)
       linkService.addLink({
         shortenKey: 'dbkey',
         originalUrl: 'https://example.com/from-db'
@@ -226,12 +333,51 @@ describe('Link Routes - Integration Tests', () => {
         redirect: 'manual'
       })
 
-      assert.strictEqual(res.status, 302)
+      assert.strictEqual(res.status, 301)
       assert.strictEqual(res.headers.get('location'), 'https://example.com/from-db')
 
       // Verify it was cached
       const cached = await deps.cacheService.get('dbkey')
       assert.strictEqual(cached, 'https://example.com/from-db')
+    })
+
+    it('should use 301 redirect for anonymous links', async () => {
+      const deps = createMockDependencies()
+      const app = createApp(deps)
+      const linkService = deps.linkService as MockLinkService
+
+      // Seed database with anonymous link (no userId)
+      linkService.addLink({
+        shortenKey: 'anonkey',
+        originalUrl: 'https://example.com/anonymous'
+      })
+
+      const res = await app.request('/anonkey', {
+        redirect: 'manual'
+      })
+
+      assert.strictEqual(res.status, 301)
+      assert.strictEqual(res.headers.get('location'), 'https://example.com/anonymous')
+    })
+
+    it('should use 302 redirect for authenticated user links', async () => {
+      const deps = createMockDependencies()
+      const app = createApp(deps)
+      const linkService = deps.linkService as MockLinkService
+
+      // Seed database with user link (with userId)
+      linkService.addLink({
+        shortenKey: 'userkey',
+        originalUrl: 'https://example.com/user-link',
+        userId: 1
+      })
+
+      const res = await app.request('/userkey', {
+        redirect: 'manual'
+      })
+
+      assert.strictEqual(res.status, 302)
+      assert.strictEqual(res.headers.get('location'), 'https://example.com/user-link')
     })
 
     it('should return 404 for non-existent key', async () => {

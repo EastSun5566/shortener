@@ -1,17 +1,46 @@
-import { eq } from 'drizzle-orm'
+import { eq, and } from 'drizzle-orm'
 
 import { getCacheClient } from './cache.js'
-import { getDbClient } from './db.js'
+import { db } from '../drizzle/db.js'
 import { toBase62 } from '../utils.js'
 import { links } from '../drizzle/schema.js'
+import { mightExist, addKey } from './bloomFilter.js'
 
 export async function createShortenKey () {
   const cache = await getCacheClient()
-
   const KEY = 'api:globalCounter'
-  const count = await cache.incr(KEY)
+  
+  let shortenKey: string
+  let attempts = 0
+  const MAX_ATTEMPTS = 10
 
-  return toBase62(count)
+  // if shortenKey collision occurs, retry
+  do {
+    const count = await cache.incr(KEY)
+    shortenKey = toBase62(count)
+    
+    const exists = await mightExist(shortenKey)
+    if (!exists) {
+      break
+    }
+    
+    // Possible collision, check database to confirm
+    const dbCheck = await findLinkByShortenKey(shortenKey)
+    if (!dbCheck) {
+      // Database confirms non-existence (false positive), safe to use
+      break
+    }
+    
+    attempts++
+    if (attempts >= MAX_ATTEMPTS) {
+      throw new Error('Failed to generate unique shorten key after max attempts')
+    }
+  } while (attempts < MAX_ATTEMPTS)
+
+  // Add the new key to Bloom Filter
+  await addKey(shortenKey)
+  
+  return shortenKey
 }
 
 const PREFIX_KEY = 'api:link'
@@ -32,16 +61,21 @@ export async function getLinkFromCache (shortenKey: string) {
 }
 
 export async function findLinkByShortenKey (shortenKey: string) {
-  const db = getDbClient()
-
   const result = await db.select().from(links).where(eq(links.shortenKey, shortenKey)).limit(1)
   return result[0] ?? null
 }
 
 export async function findLinksByUserId (userId: number) {
-  const db = getDbClient()
-
   return await db.select().from(links).where(eq(links.userId, userId))
+}
+
+export async function findLinkByOriginalUrl (originalUrl: string, userId?: number) {
+  const conditions = userId
+    ? and(eq(links.originalUrl, originalUrl), eq(links.userId, userId))
+    : eq(links.originalUrl, originalUrl)
+
+  const result = await db.select().from(links).where(conditions).limit(1)
+  return result[0] ?? null
 }
 
 export async function createLink ({
@@ -53,8 +87,6 @@ export async function createLink ({
   shortenKey: string
   userId?: number
 }) {
-  const db = getDbClient()
-
   const result = await db.insert(links).values({
     originalUrl,
     shortenKey,
