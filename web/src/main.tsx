@@ -13,6 +13,7 @@ import {
   LoginRoute,
   RegisterRoute
 } from './pages'
+import { AuthProvider } from './contexts'
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -42,7 +43,9 @@ const router = createBrowserRouter([
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
     <QueryClientProvider client={queryClient}>
-      <RouterProvider router={router} />
+      <AuthProvider>
+        <RouterProvider router={router} />
+      </AuthProvider>
     </QueryClientProvider>
   </React.StrictMode>
 )

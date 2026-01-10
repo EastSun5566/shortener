@@ -42,6 +42,7 @@ export function RootRoute () {
           <input
             type="url"
             placeholder="URL..."
+            data-testid="url-input"
             {...register('originalUrl', {
               required: 'URL is required',
               pattern: {
@@ -62,6 +63,7 @@ export function RootRoute () {
 
           <button
             type="submit"
+            data-testid="shorten-button"
             disabled={formState.isSubmitting || createMutation.isPending}
             className="disabled:opacity-50 disabled:cursor-not-allowed"
           >
@@ -69,9 +71,22 @@ export function RootRoute () {
           </button>
         </form>
 
-        {error && <small className="text-red-500 mb-4">{error}</small>}
-        {createMutation.isSuccess && (
-          <small className="text-green-500 mb-4">Short link created successfully!</small>
+        {error && <small className="text-red-500 mb-4" data-testid="error-message">{error}</small>}
+        {createMutation.isSuccess && createMutation.data && (
+          <div className="mb-4">
+            <small className="text-green-500 block mb-2" data-testid="success-message">
+              Short link created successfully!
+            </small>
+            <a
+              href={createMutation.data.data.shortenUrl}
+              target="_blank"
+              rel="noreferrer"
+              className="text-blue-500 underline"
+              data-testid="created-short-link"
+            >
+              {createMutation.data.data.shortenUrl}
+            </a>
+          </div>
         )}
         {formState.errors.originalUrl && (
           <small className="text-red-500 mb-4">{formState.errors.originalUrl.message}</small>
@@ -80,13 +95,14 @@ export function RootRoute () {
         {isLoading && <p className="text-gray-500 mb-4">Loading links...</p>}
 
         {links && links.length > 0 && (
-          <ul className="max-h-40 overflow-y-scroll">
+          <ul className="max-h-40 overflow-y-scroll" data-testid="links-list">
             {links.map((link) => (
               <li key={link.shortenUrl}>
                 <a
                   href={link.shortenUrl}
                   target='_blank'
-                  rel="noreferrer">
+                  rel="noreferrer"
+                  data-testid="short-link">
                   {link.shortenUrl}
                 </a>
                 {link.clickCount !== undefined && (

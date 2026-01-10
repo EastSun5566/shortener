@@ -1,17 +1,3 @@
-import { useState, useCallback } from 'react'
+// Re-export useAuth from context to maintain backward compatibility
+export { useAuth } from '../contexts/AuthContext'
 
-export function useAuth () {
-  const [isAuthenticated, setIsAuthenticated] = useState(() => !!localStorage.getItem('token'))
-
-  const login = useCallback((token: string) => {
-    localStorage.setItem('token', token)
-    setIsAuthenticated(true)
-  }, [])
-
-  const logout = useCallback(() => {
-    localStorage.removeItem('token')
-    setIsAuthenticated(false)
-  }, [])
-
-  return { isAuthenticated, login, logout }
-}

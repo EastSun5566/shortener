@@ -17,7 +17,7 @@ export function Nav () {
         {isAuthenticated
           ? (
             <li>
-              <button onClick={logout}>logout</button>
+              <button onClick={logout} data-testid="logout-button">logout</button>
             </li>
             )
           : (

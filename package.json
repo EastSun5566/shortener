@@ -5,6 +5,7 @@
   "scripts": {
     "lint": "eslint --fix .",
     "test": "pnpm run server:test",
+    "test:e2e": "pnpm run web:test:e2e",
     "build": "pnpm run server:build && pnpm run web:build",
     "server:dev": "pnpm --filter server dev",
     "server:migrate": "pnpm --filter server db:migrate",
@@ -13,7 +14,8 @@
     "server:test": "pnpm --filter server test",
     "web:dev": "pnpm --filter web dev",
     "web:build": "pnpm --filter web build",
-    "web:start": "pnpm --filter web preview"
+    "web:start": "pnpm --filter web preview",
+    "web:test:e2e": "pnpm --filter web test:e2e"
   },
   "author": "Michael Wang",
   "license": "MIT",

@@ -36,6 +36,7 @@ export function AuthForm ({
         <input
           type="email"
           placeholder="email..."
+          data-testid="email-input"
           {...registerInput('email', { 
               required: 'Email is required',
             })}
@@ -45,6 +46,7 @@ export function AuthForm ({
         <input
           type="password"
           placeholder="password..."
+          data-testid="password-input"
           {...registerInput('password', {
             required: 'Password is required',
             minLength: {
@@ -62,7 +64,7 @@ export function AuthForm ({
           })}
         />
 
-        <button type="submit" disabled={isLoading}>
+        <button type="submit" disabled={isLoading} data-testid="auth-submit-button">
           {isLoading ? 'Loading...' : title}
         </button>
       </form>

@@ -24,9 +24,9 @@
 - [x] 使用套件檢查程式碼風格 (例如：[JavaScript Standard](https://standardjs.com/)、[ESLint](https://eslint.org/))
 - [ ] 專案需要能被公開瀏覽使用 (例如使用 [Heroku](https://www.heroku.com/))
 - [x] [單元測試](https://en.wikipedia.org/wiki/Unit_testing)
-- [ ] [E2E 測試](https://www.browserstack.com/guide/end-to-end-testing)
+- [x] [E2E 測試](https://www.browserstack.com/guide/end-to-end-testing)
 - [ ] 開發時全程使用 [TDD](https://en.wikipedia.org/wiki/Test-driven_development)
-- [ ] 整合 [CI/CD](https://en.wikipedia.org/wiki/CI/CD) 流程
+- [x] 整合 [CI/CD](https://en.wikipedia.org/wiki/CI/CD) 流程
 
 ### 需挑選以下==至少兩項==功能實作
 
