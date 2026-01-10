@@ -34,7 +34,7 @@ export const cacheService: CacheService = {
     const data = await client.get(`link:${shortenKey}`)
     if (!data) return null
     try {
-      return JSON.parse(data)
+      return JSON.parse(data) as { originalUrl: string; userId: number | null }
     } catch {
       // Fallback for old cache format (plain string)
       return { originalUrl: data, userId: null }
