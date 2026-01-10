@@ -163,6 +163,8 @@ jobs:
       REDIS_URL: redis://localhost:6379
       JWT_SECRET: test-jwt-secret-key-for-ci-minimum-32-characters-long
       NODE_ENV: development
+      SERVER_PORT: 8080
+      WEB_PORT: 3001
 
     steps:
       - uses: actions/checkout@v6
@@ -194,6 +196,7 @@ jobs:
           REDIS_URL=${{ env.REDIS_URL }}
           JWT_SECRET=${{ env.JWT_SECRET }}
           NODE_ENV=${{ env.NODE_ENV }}
+          PORT=${{ env.SERVER_PORT }}
           EOF
           echo "Created .env file with:"
           cat server/.env
@@ -207,9 +210,9 @@ jobs:
 
       - name: Wait for server to be ready
         run: |
-          echo "Waiting for server at http://localhost:3000/health..."
+          echo "Waiting for server at http://localhost:${{ env.SERVER_PORT }}/health..."
           for i in {1..60}; do
-            if curl -sf http://localhost:3000/health > /dev/null 2>&1; then
+            if curl -sf http://localhost:${{ env.SERVER_PORT }}/health > /dev/null 2>&1; then
               echo "✓ Server is ready after $i seconds!"
               exit 0
             fi

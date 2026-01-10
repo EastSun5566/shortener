@@ -1,5 +1,7 @@
 import { defineConfig, devices } from '@playwright/test';
 
+const WEB_PORT = process.env.WEB_PORT || '3001';
+
 export default defineConfig({
   testDir: './e2e',
   fullyParallel: true,
@@ -9,7 +11,7 @@ export default defineConfig({
   reporter: 'html',
   
   use: {
-    baseURL: 'http://localhost:3001',
+    baseURL: `http://localhost:${WEB_PORT}`,
     trace: 'on-first-retry',
   },
 
@@ -27,7 +29,7 @@ export default defineConfig({
 
   webServer: {
     command: 'pnpm run dev',
-    url: 'http://localhost:3001',
+    url: `http://localhost:${WEB_PORT}`,
     reuseExistingServer: !process.env.CI,
   },
 });
