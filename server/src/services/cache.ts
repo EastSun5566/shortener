@@ -55,9 +55,6 @@ export async function getCacheClient (): Promise<RedisClientType> {
     client.on('error', (error: Error) => {
       console.error('Redis Client Error:', error.message)
     })
-    client.on('connect', () => {
-      console.log('Redis: Connected successfully')
-    })
     client.on('reconnecting', () => {
       console.log('Redis: Reconnecting...')
     })

@@ -89,6 +89,11 @@ export function RootRoute () {
                   rel="noreferrer">
                   {link.shortenUrl}
                 </a>
+                {link.clickCount !== undefined && (
+                  <span style={{ marginLeft: '1rem', color: '#666', fontSize: '0.9em' }}>
+                    📊 {link.clickCount} clicks
+                  </span>
+                )}
               </li>
             ))}
           </ul>

@@ -54,7 +54,7 @@ export class MockLinkService implements LinkService {
   findLinksByUserId = async (userId: number) => {
     return this.links
       .filter(l => l.userId === userId)
-      .map(l => ({ shortenKey: l.shortenKey }))
+      .map(l => ({ shortenKey: l.shortenKey, clickCount: 0 }))
   }
 
   // Test helper
@@ -117,10 +117,18 @@ export class MockTokenService implements TokenService {
 
 export class MockUtilsService implements UtilsService {
   private keyCounter = 0
+  private clickCounts = new Map<string, number>()
 
   createShortenKey = async (): Promise<string> => {
     this.keyCounter++
     return `key${this.keyCounter.toString().padStart(6, '0')}`
+  }
+
+  incrementClickCount = async (shortenKey: string): Promise<number> => {
+    const current = this.clickCounts.get(shortenKey) || 0
+    const newCount = current + 1
+    this.clickCounts.set(shortenKey, newCount)
+    return newCount
   }
 
   hashPassword = async (password: string, _saltRounds: number): Promise<string> => {

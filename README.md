@@ -23,7 +23,7 @@
 - [x] 整個 React App 使用 [Functional Component](https://reactjs.org/docs/components-and-props.html#function-and-class-components)
 - [x] 使用套件檢查程式碼風格 (例如：[JavaScript Standard](https://standardjs.com/)、[ESLint](https://eslint.org/))
 - [ ] 專案需要能被公開瀏覽使用 (例如使用 [Heroku](https://www.heroku.com/))
-- [ ] [單元測試](https://en.wikipedia.org/wiki/Unit_testing)
+- [x] [單元測試](https://en.wikipedia.org/wiki/Unit_testing)
 - [ ] [E2E 測試](https://www.browserstack.com/guide/end-to-end-testing)
 - [ ] 開發時全程使用 [TDD](https://en.wikipedia.org/wiki/Test-driven_development)
 - [ ] 整合 [CI/CD](https://en.wikipedia.org/wiki/CI/CD) 流程
@@ -34,8 +34,8 @@
 - [x] 使用者可以使用密碼註冊、登入、登出
 - [x] 使用者可以新增、建立、更新、刪除多個短網址
 - [x] 短網址重新導向的過程使用快取 (可暫時避免向資料庫查詢)
-- [ ] 使用者可以知道短網址瀏覽次數
-- [ ] 服務會避免短網址重複重導向到相同網址
+- [x] 使用者可以知道短網址瀏覽次數
+- [x] 服務會避免短網址重複重導向到相同網址
 - [ ] 從短網址拿到原始網址的 [Open Graph Metadata](https://ogp.me/) （標題、描述、圖片）
 - [ ] 使用者可以自訂 [Open Graph Metadata](https://ogp.me/)（標題、描述、圖片）
 

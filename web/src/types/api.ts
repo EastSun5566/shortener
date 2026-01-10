@@ -13,6 +13,7 @@ export interface CreateLinkData {
 
 export interface LinkResponse {
   shortenUrl: string
+  clickCount?: number
   originalUrl?: string
   createdAt?: string
 }

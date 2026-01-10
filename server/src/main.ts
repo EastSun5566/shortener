@@ -26,7 +26,6 @@ const app = createApp({
 export async function main (): Promise<void> {
   validateEnv()
 
-  console.log('🚀 Initializing services...')
   try {
     await initDb()
     await initCache()

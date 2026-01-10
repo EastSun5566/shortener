@@ -16,6 +16,7 @@ export const links = pgTable('Link', {
   id: serial('id').primaryKey(),
   originalUrl: text('original_url').notNull(),
   shortenKey: varchar('shorten_key', { length: 255 }).notNull().unique(),
+  clickCount: integer('click_count').notNull().default(0),
   createdAt: timestamp('createdAt', { mode: 'date' }).notNull().defaultNow(),
   updatedAt: timestamp('updatedAt', { mode: 'date' }).notNull().defaultNow(),
   userId: integer('userId').references(() => users.id)

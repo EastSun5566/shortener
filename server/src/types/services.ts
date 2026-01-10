@@ -7,7 +7,7 @@ export interface LinkService {
   createLink: (data: { originalUrl: string, shortenKey: string, userId?: number }) => Promise<void>
   findLinkByShortenKey: (shortenKey: string) => Promise<{ originalUrl: string, userId: number | null } | undefined>
   findLinkByOriginalUrl: (originalUrl: string, userId?: number) => Promise<{ originalUrl: string, shortenKey: string, userId: number | null } | undefined>
-  findLinksByUserId: (userId: number) => Promise<{ shortenKey: string }[]>
+  findLinksByUserId: (userId: number) => Promise<{ shortenKey: string, clickCount: number }[]>
 }
 
 export interface CacheService {
@@ -22,6 +22,7 @@ export interface TokenService {
 
 export interface UtilsService {
   createShortenKey: () => Promise<string>
+  incrementClickCount: (shortenKey: string) => Promise<number>
   hashPassword: (password: string, saltRounds: number) => Promise<string>
   comparePassword: (password: string, hash: string) => Promise<boolean>
 }

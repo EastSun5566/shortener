@@ -48,6 +48,41 @@ export async function findLinkByShortenKey (shortenKey: string) {
   return result[0] ?? null
 }
 
+export async function incrementClickCount (shortenKey: string) {
+  const cache = await getCacheClient()
+  const CLICK_KEY = `click:${shortenKey}`
+  
+  // Increment in Redis for fast response
+  const count = await cache.incr(CLICK_KEY)
+  
+  // Sync to database every 10 clicks or after TTL expires
+  if (count % 10 === 0 || count === 1) {
+    // Asynchronously update database (don't wait)
+    syncClickCountToDb(shortenKey).catch(err => {
+      console.error(`Failed to sync click count for ${shortenKey}:`, err)
+    })
+  }
+  
+  return count
+}
+
+async function syncClickCountToDb (shortenKey: string) {
+  const cache = await getCacheClient()
+  const CLICK_KEY = `click:${shortenKey}`
+  
+  // Get current count from Redis
+  const countStr = await cache.get(CLICK_KEY)
+  if (!countStr) return
+  
+  const redisCount = parseInt(countStr, 10)
+  
+  // Update database
+  await db
+    .update(links)
+    .set({ clickCount: redisCount })
+    .where(eq(links.shortenKey, shortenKey))
+}
+
 export async function findLinksByUserId (userId: number) {
   return await db.select().from(links).where(eq(links.userId, userId))
 }

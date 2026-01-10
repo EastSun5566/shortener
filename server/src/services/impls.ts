@@ -54,6 +54,7 @@ export const tokenService: TokenService = {
 
 export const utilsService: UtilsService = {
   createShortenKey,
+  incrementClickCount: linkSvc.incrementClickCount,
   hashPassword: hash,
   comparePassword: compare
 }

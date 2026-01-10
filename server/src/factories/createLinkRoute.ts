@@ -34,8 +34,9 @@ export function createLinkRoute (deps: AppDependencies) {
       const userId = c.get('userId')
       const links = await linkService.findLinksByUserId(userId)
 
-      return c.json(links.map(({ shortenKey }) => ({
-        shortenUrl: `${new URL(c.req.url).origin}/${shortenKey}`
+      return c.json(links.map(({ shortenKey, clickCount }) => ({
+        shortenUrl: `${new URL(c.req.url).origin}/${shortenKey}`,
+        clickCount
       })))
     })
     .post('/links', linkRateLimiter, optionalAuth, zValidator('json', createLinkSchema), async (ctx) => {
@@ -73,6 +74,11 @@ export function createLinkRoute (deps: AppDependencies) {
       // get from cache
       const cached = await cacheService.get(shortenKey)
       if (cached) {
+        // Increment click count asynchronously (don't wait)
+        utilsService.incrementClickCount(shortenKey).catch(err => {
+          console.error('Failed to increment click count:', err)
+        })
+        
         // Use 302 for user links (tracking), 301 for anonymous links (performance)
         const statusCode = cached.userId ? 302 : 301
         return ctx.redirect(cached.originalUrl, statusCode)
@@ -83,6 +89,11 @@ export function createLinkRoute (deps: AppDependencies) {
       if (!link) {
         throw new HTTPException(404, { message: 'Link not found' })
       }
+
+      // Increment click count asynchronously (don't wait)
+      utilsService.incrementClickCount(shortenKey).catch(err => {
+        console.error('Failed to increment click count:', err)
+      })
 
       // add to cache
       await cacheService.set(shortenKey, link.originalUrl, link.userId)
