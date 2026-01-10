@@ -1,0 +1,12 @@
+# Environment variables (keep .env.example)
+.env
+
+# Build output
+dist/
+
+# Test output
+coverage/
+.nyc_output/
+
+# Logs
+*.log
