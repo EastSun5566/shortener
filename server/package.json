@@ -5,6 +5,7 @@
   "version": "0.0.0",
   "scripts": {
     "dev": "node --env-file=.env --import tsx src/main.ts",
+    "dev:docker": "node --import tsx src/main.ts",
     "db:generate": "drizzle-kit generate",
     "db:migrate": "drizzle-kit migrate",
     "db:push": "drizzle-kit push",

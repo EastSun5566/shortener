@@ -106,28 +106,74 @@ erDiagram
 
 ## 起步
 
-### 環境需求
+有三種方式可以啟動專案：
 
-- [Node.js](https://nodejs.org/en/) v16+
-- [PNPM](https://pnpm.io/zh-TW/)
-- [Docker Desktop](https://www.docker.com/products/docker-desktop)
+### 方式 1: Docker Compose（推薦）
 
-### 本地啟動
+最簡單的方式，適合快速體驗或生產環境部署。
 
 ```sh
-# 啟動 PostgreSQL、Redis
-docker-compose up -d
+# 啟動所有服務（PostgreSQL、Redis、Server、Web）
+# 所有配置都有合理的默認值，無需額外設定
+docker compose up
 
-# 安裝依賴
+# 背景執行
+docker compose up -d
+
+# 查看 logs
+docker compose logs -f
+
+# 停止所有服務
+docker compose down
+```
+
+應用會在以下位置啟動：
+
+- Web UI: <http://localhost:3001>
+- API: <http://localhost:8080>
+
+完整的 Docker 部署文件請見 [docs/SELF_HOSTING.md](docs/SELF_HOSTING.md)
+
+### 方式 2: 本地開發
+
+#### 環境需求
+
+- [Node.js](https://nodejs.org/en/) v22+
+- [PNPM](https://pnpm.io/zh-TW/) v9+
+- [Docker Desktop](https://www.docker.com/products/docker-desktop)（用於 PostgreSQL 和 Redis）
+
+#### 步驟
+
+```sh
+# 1. 啟動 PostgreSQL、Redis
+docker compose up db cache -d
+
+# 2. 安裝依賴
 pnpm install
 
-# 複製環境變數與遷移資料庫
+# 3. 複製環境變數與遷移資料庫
 cp server/.env.example server/.env
 pnpm server:migrate
 
-# 啟動 server 於 http://127.0.0.1:8080
+# 4. 啟動 server 於 http://127.0.0.1:8080
 pnpm server:dev
 
-# 啟動 web 於 http://127.0.0.1:3000
+# 5. 在另一個終端啟動 web 於 http://127.0.0.1:3001
 pnpm web:dev
+```
+
+### 方式 3: 生產環境部署
+
+使用 Docker Compose 的生產模式，會建立最佳化的映像檔並使用單一服務架構（server 同時提供 API 和靜態檔案）。
+
+```sh
+# 建立生產環境設定
+cp .env.example .env.production
+# 編輯 .env.production 填入生產環境的設定
+
+# 啟動生產環境
+docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d
+
+# 查看狀態
+docker compose -f docker-compose.yml -f docker-compose.prod.yml ps
 ```
