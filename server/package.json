@@ -28,7 +28,7 @@
     "bcryptjs": "^3.0.3",
     "bloom-filters": "^3.0.4",
     "drizzle-orm": "^0.45.1",
-    "hono": "^4.11.1",
+    "hono": "^4.11.4",
     "hono-rate-limiter": "^0.5.1",
     "jsonwebtoken": "^9.0.3",
     "pg": "^8.16.3",
