@@ -6,6 +6,17 @@ import { config } from '../config.js'
 let client: RedisClientType | null = null
 let isConnecting = false
 
+function reconnectStrategy (retries: number) {
+  if (retries > 10) {
+    console.error('Redis: Max reconnection attempts reached')
+    return new Error('Max reconnection attempts reached')
+  }
+
+  const delay = Math.min(retries * 100, 3000)
+  console.log(`Redis: Reconnecting in ${delay}ms (attempt ${retries})`)
+  return delay
+}
+
 export async function getCacheClient (): Promise<RedisClientType> {
   if (client?.isOpen) return client
 
@@ -25,30 +36,14 @@ export async function getCacheClient (): Promise<RedisClientType> {
       ? createClient({
         url: redisUrl,
         socket: {
-          reconnectStrategy: (retries) => {
-            if (retries > 10) {
-              console.error('Redis: Max reconnection attempts reached')
-              return new Error('Max reconnection attempts reached')
-            }
-            const delay = Math.min(retries * 100, 3000)
-            console.log(`Redis: Reconnecting in ${delay}ms (attempt ${retries})`)
-            return delay
-          }
+          reconnectStrategy
         }
       })
       : createClient({
         socket: {
           host: config.cache.host,
           port: config.cache.port,
-          reconnectStrategy: (retries) => {
-            if (retries > 10) {
-              console.error('Redis: Max reconnection attempts reached')
-              return new Error('Max reconnection attempts reached')
-            }
-            const delay = Math.min(retries * 100, 3000)
-            console.log(`Redis: Reconnecting in ${delay}ms (attempt ${retries})`)
-            return delay
-          }
+          reconnectStrategy
         }
       })
 

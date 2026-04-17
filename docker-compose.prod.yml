@@ -1,24 +1,39 @@
-# Production overlay for docker-compose.yml
-# Usage: docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d
-
 services:
   db:
+    image: postgres:16-alpine
     restart: always
-    # In production, you might want to use a managed database instead
-    # Remove the ports if you don't need external access
-    ports: []
     environment:
-      POSTGRES_USER: ${DB_USER}
-      POSTGRES_PASSWORD: ${DB_PASSWORD}
-      POSTGRES_DB: ${DB_NAME}
+      POSTGRES_USER: ${DB_USER:-root}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-password}
+      POSTGRES_DB: ${DB_NAME:-url_shortener}
+    volumes:
+      - db_data:/var/lib/postgresql/data
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "pg_isready -U ${DB_USER:-root} -d ${DB_NAME:-url_shortener}",
+        ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
   cache:
+    image: redis:7-alpine
     restart: always
-    ports: []
+    volumes:
+      - cache_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
   server:
     build:
       target: production
+      context: .
+      dockerfile: Dockerfile
       args:
         NODE_ENV: production
     restart: always
@@ -26,22 +41,22 @@ services:
       - "${SERVER_PORT:-8080}:8080"
     environment:
       NODE_ENV: production
-      DB_HOST: db
-      DB_PORT: 5432
-      DB_USER: ${DB_USER}
-      DB_PASSWORD: ${DB_PASSWORD}
-      DB_NAME: ${DB_NAME}
-      REDIS_HOST: cache
-      REDIS_PORT: 6379
-      SERVER_PORT: 8080
+      HOST: "0.0.0.0"
+      PORT: 8080
+      DATABASE_URL: postgresql://${DB_USER:-root}:${DB_PASSWORD:-password}@db:5432/${DB_NAME:-url_shortener}
+      CACHE_HOST: cache
+      CACHE_PORT: 6379
       JWT_SECRET: ${JWT_SECRET}
+      JWT_EXPIRES_IN: ${JWT_EXPIRES_IN:-7d}
+      BCRYPT_SALT_ROUNDS: ${BCRYPT_SALT_ROUNDS:-12}
       CORS_ORIGINS: ${CORS_ORIGINS}
-    # Remove volume mounts - code is in the container
-    volumes: []
-    command: sh -c "cd /app/server && pnpm run migrate && pnpm run start"
+    depends_on:
+      db:
+        condition: service_healthy
+      cache:
+        condition: service_healthy
+    command: sh -c "pnpm --filter server db:migrate && pnpm --filter server start"
 
-  web:
-    # In production, web is served by server (single service architecture)
-    # So we don't need the web service at all
-    profiles:
-      - donotstart
+volumes:
+  db_data:
+  cache_data:

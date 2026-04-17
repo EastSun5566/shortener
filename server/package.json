@@ -4,13 +4,13 @@
   "private": true,
   "version": "0.0.0",
   "scripts": {
-    "dev": "node --env-file=.env --import tsx src/main.ts",
+    "dev": "node --env-file-if-exists=.env --import tsx src/main.ts",
     "dev:docker": "node --import tsx src/main.ts",
     "db:generate": "drizzle-kit generate",
     "db:migrate": "drizzle-kit migrate",
     "db:push": "drizzle-kit push",
     "db:studio": "drizzle-kit studio",
-    "start": "node --env-file=.env dist/src/main.js",
+    "start": "node --env-file-if-exists=.env dist/src/main.js",
     "build": "tsc",
     "test": "node --env-file=.env.example --import tsx --test src/__tests__/**/*.test.ts"
   },
