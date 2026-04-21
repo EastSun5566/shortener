@@ -34,9 +34,24 @@ export interface AppDependencies {
   tokenService: TokenService
   utilsService: UtilsService
   config: {
-    security: {
-      bcryptSaltRounds: number
-      corsOrigins: string[]
+    server: {
+      host: string
+      port: number
     }
+    cache: {
+      host: string
+      port: number
+      linkTtl: number
+    }
+    db: {
+      url: string
+    }
+    security: {
+      corsOrigins: string[]
+      jwtSecret: string
+      jwtExpiresIn: string
+      bcryptSaltRounds: number
+    }
+    nodeEnv: 'development' | 'production' | 'test'
   }
 }

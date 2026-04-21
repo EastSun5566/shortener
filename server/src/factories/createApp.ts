@@ -5,6 +5,7 @@ import { requestId, type RequestIdVariables } from 'hono/request-id'
 import { secureHeaders } from 'hono/secure-headers'
 import { timeout } from 'hono/timeout'
 import { HTTPException } from 'hono/http-exception'
+import { serveStatic } from '@hono/node-server/serve-static'
 
 import type { AppDependencies } from '../types/services.js'
 import { createUserRoute } from './createUserRoute.js'
@@ -81,6 +82,13 @@ export function createApp (deps: AppDependencies) {
   app.route('/', healthRoute)
   app.route('/', createUserRoute(deps))
   app.route('/', createLinkRoute(deps))
+
+  // Serve static files in production
+  if (deps.config.nodeEnv === 'production') {
+    app.use('/*', serveStatic({ root: './web/dist' }))
+    // Fallback to index.html for client-side routing
+    app.get('*', serveStatic({ path: './web/dist/index.html' }))
+  }
 
   return app
 }
