@@ -154,10 +154,25 @@ export function createMockDependencies (): AppDependencies {
     tokenService: new MockTokenService(),
     utilsService: new MockUtilsService(),
     config: {
+      server: {
+        host: 'localhost',
+        port: 8080
+      },
+      cache: {
+        host: 'localhost',
+        port: 6379,
+        linkTtl: 60
+      },
+      db: {
+        url: 'postgresql://root:password@localhost:5432/url_shortener'
+      },
       security: {
         bcryptSaltRounds: 12,
-        corsOrigins: ['http://localhost:5173']
-      }
+        corsOrigins: ['http://localhost:5173'],
+        jwtSecret: 'mock-secret-that-is-at-least-32-characters',
+        jwtExpiresIn: '7d'
+      },
+      nodeEnv: 'test'
     }
   }
 }
