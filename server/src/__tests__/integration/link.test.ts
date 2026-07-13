@@ -232,6 +232,65 @@ describe('Link Routes - Integration Tests', () => {
       // Different users should get different short URLs
       assert.notStrictEqual(data1.shortenUrl, data2.shortenUrl)
     })
+
+    it('should not reuse a user-owned link for an anonymous request', async () => {
+      const deps = createMockDependencies()
+      const app = createApp(deps)
+      const originalUrl = 'https://example.com/ownership-boundary'
+      const headers = new Headers({
+        'Content-Type': 'application/json',
+        'x-real-ip': '192.0.2.10'
+      })
+
+      const registerRes = await app.request('/register', {
+        method: 'POST',
+        body: JSON.stringify({
+          email: 'owner@example.com',
+          password: 'Password123'
+        }),
+        headers
+      })
+      const { token } = await registerRes.json() as { token: string }
+
+      const ownerRes = await app.request('/links', {
+        method: 'POST',
+        body: JSON.stringify({ originalUrl }),
+        headers: new Headers({
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+          'x-real-ip': '192.0.2.10'
+        })
+      })
+      const ownerLink = await ownerRes.json() as { shortenUrl: string }
+
+      const anonymousRes = await app.request('/links', {
+        method: 'POST',
+        body: JSON.stringify({ originalUrl }),
+        headers: new Headers({
+          'Content-Type': 'application/json',
+          'x-real-ip': '192.0.2.11'
+        })
+      })
+      const anonymousLink = await anonymousRes.json() as { shortenUrl: string, existed: boolean }
+
+      assert.strictEqual(anonymousRes.status, 201)
+      assert.strictEqual(anonymousLink.existed, false)
+      assert.notStrictEqual(anonymousLink.shortenUrl, ownerLink.shortenUrl)
+
+      const duplicateAnonymousRes = await app.request('/links', {
+        method: 'POST',
+        body: JSON.stringify({ originalUrl }),
+        headers: new Headers({
+          'Content-Type': 'application/json',
+          'x-real-ip': '192.0.2.11'
+        })
+      })
+      const duplicateAnonymousLink = await duplicateAnonymousRes.json() as { shortenUrl: string, existed: boolean }
+
+      assert.strictEqual(duplicateAnonymousRes.status, 200)
+      assert.strictEqual(duplicateAnonymousLink.existed, true)
+      assert.strictEqual(duplicateAnonymousLink.shortenUrl, anonymousLink.shortenUrl)
+    })
   })
 
   describe('GET /links', () => {

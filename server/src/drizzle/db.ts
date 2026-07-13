@@ -1,5 +1,7 @@
 import { drizzle } from 'drizzle-orm/node-postgres'
+import { migrate } from 'drizzle-orm/node-postgres/migrator'
 import { Pool } from 'pg'
+import { fileURLToPath } from 'node:url'
 
 import * as schema from './schema.js'
 import { config } from '../config.js'
@@ -29,6 +31,13 @@ export async function initDb() {
   } finally {
     client.release()
   }
+}
+
+export async function migrateDb () {
+  const migrationsFolder = fileURLToPath(new URL('.', import.meta.url))
+  console.log('🔧 Running database migrations...')
+  await migrate(db, { migrationsFolder })
+  console.log('✅ Database migrations completed')
 }
 
 export async function closeDb() {

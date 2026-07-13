@@ -70,7 +70,7 @@ services:
         condition: service_healthy
       cache:
         condition: service_healthy
-    command: sh -c "cd /app/server && pnpm run db:migrate && pnpm run dev:docker"
+    command: pnpm --filter server dev:docker
 
   web:
     build:

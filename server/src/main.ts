@@ -1,9 +1,8 @@
 import { serve } from '@hono/node-server'
 import { createApp } from './factories/createApp.js'
 import { config } from './config.js'
-import { validateEnv } from './utils.js'
 import { closeCache, initCache } from './services/cache.js'
-import { closeDb, initDb } from './drizzle/db.js'
+import { closeDb, initDb, migrateDb } from './drizzle/db.js'
 import { initBloomFilter } from './services/bloomFilter.js'
 import {
   userService,
@@ -24,47 +23,68 @@ const app = createApp({
 
 
 export async function main (): Promise<void> {
-  validateEnv()
-
   try {
     await initDb()
+    await migrateDb()
     await initCache()
     await initBloomFilter()
-    
+
     console.log('✅ All services initialized successfully')
   } catch (error) {
     console.error('❌ Failed to initialize services:', error)
-    process.exit(1)
+    await Promise.allSettled([closeCache(), closeDb()])
+    throw error
   }
-  
-  // Graceful shutdown handler
-  const shutdown = async (signal: string) => {
-    console.log(`\n${signal} received, closing server gracefully...`)
-    
-    try {
-      await closeCache()
-      await closeDb()
-      console.log('✅ Graceful shutdown completed')
-      process.exit(0)
-    } catch (error) {
-      console.error('❌ Error during shutdown:', error)
-      process.exit(1)
-    }
-  }
-  
-  process.on('SIGTERM', async () => { await shutdown('SIGTERM') })
-  process.on('SIGINT', async () => { await shutdown('SIGINT') })
 
-  // Start server
-  serve({
+  const server = serve({
     fetch: app.fetch,
+    hostname: config.server.host,
     port: config.server.port
   }, (info) => {
     console.log(`Server is running on http://${config.server.host}:${info.port}`)
   })
+
+  let isShuttingDown = false
+
+  // Graceful shutdown handler
+  const shutdown = async (signal: string) => {
+    if (isShuttingDown) return
+    isShuttingDown = true
+
+    console.log(`\n${signal} received, closing server gracefully...`)
+
+    let failed = false
+
+    await new Promise<void>((resolve) => {
+      server.close((error) => {
+        if (error) {
+          failed = true
+          console.error('❌ Failed to close HTTP server:', error)
+        }
+        resolve()
+      })
+    })
+
+    const closeResults = await Promise.allSettled([closeCache(), closeDb()])
+    for (const result of closeResults) {
+      if (result.status === 'rejected') {
+        failed = true
+        console.error('❌ Error while closing a service:', result.reason)
+      }
+    }
+
+    if (failed) {
+      process.exitCode = 1
+    } else {
+      console.log('✅ Graceful shutdown completed')
+    }
+  }
+
+  process.once('SIGTERM', () => { void shutdown('SIGTERM') })
+  process.once('SIGINT', () => { void shutdown('SIGINT') })
 }
 
 main().catch((error: unknown) => {
   console.error('Failed to start server:', error)
-  process.exit(1)
+  process.exitCode = 1
 })

@@ -2,33 +2,25 @@ import { describe, it } from 'node:test'
 import assert from 'node:assert'
 import { createApp } from '../../factories/createApp.js'
 import { createMockDependencies } from '../mocks/services.js'
-import type { MockLinkService } from '../mocks/services.js'
+import type { MockLinkService, MockUtilsService } from '../mocks/services.js'
 
 describe('Click Tracking Tests', () => {
   it('should increment click count on redirect', async () => {
     const deps = createMockDependencies()
     const app = createApp(deps)
     const linkService = deps.linkService as MockLinkService
+    const utilsService = deps.utilsService as MockUtilsService
 
     // Seed a link
     linkService.addLink({
       shortenKey: 'testkey',
       originalUrl: 'https://example.com'
     })
+    utilsService.setClickCount('testkey', 41)
 
-    // First redirect
     await app.request('/testkey', { redirect: 'manual' })
-    
-    // Verify click count incremented
-    let count = await deps.utilsService.incrementClickCount('testkey')
-    assert.ok(count > 0, 'Click count should be greater than 0 after first redirect')
 
-    // Second redirect
-    await app.request('/testkey', { redirect: 'manual' })
-    
-    // Verify click count incremented again
-    count = await deps.utilsService.incrementClickCount('testkey')
-    assert.ok(count > 1, 'Click count should increase with multiple redirects')
+    assert.strictEqual(utilsService.getClickCount('testkey'), 42)
   })
 
   it('should return clickCount in GET /links', async () => {

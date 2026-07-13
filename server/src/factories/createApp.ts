@@ -81,14 +81,18 @@ export function createApp (deps: AppDependencies) {
   // Routes
   app.route('/', healthRoute)
   app.route('/', createUserRoute(deps))
-  app.route('/', createLinkRoute(deps))
 
   // Serve static files in production
   if (deps.config.nodeEnv === 'production') {
     app.use('/*', serveStatic({ root: './web/dist' }))
-    // Fallback to index.html for client-side routing
-    app.get('*', serveStatic({ path: './web/dist/index.html' }))
+    const serveIndex = serveStatic({ path: './web/dist/index.html' })
+    app.get('/', serveIndex)
+    app.get('/login', serveIndex)
+    app.get('/register', serveIndex)
   }
+
+  // Keep the top-level short-link route after reserved SPA routes.
+  app.route('/', createLinkRoute(deps))
 
   return app
 }

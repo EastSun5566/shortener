@@ -3,105 +3,102 @@ name: CI
 on:
   push:
     branches: [main]
+    tags: ["v*.*.*"]
   pull_request:
     branches: [main]
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
 
 jobs:
-  lint:
-    name: Lint & Type Check
+  verify:
+    name: Verify
     runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v6
-
-      - name: Setup pnpm
-        uses: pnpm/action-setup@v4
-        with:
-          version: 9
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v6
-        with:
-          node-version: "22"
-          cache: "pnpm"
-
-      - name: Install dependencies
-        run: pnpm install --frozen-lockfile
-
-      - name: Run ESLint
-        run: pnpm run lint
-
-      - name: Type check server
-        run: pnpm --filter server run build --noEmit || pnpm --filter server exec tsc --noEmit
-
-      - name: Type check web
-        run: pnpm --filter web run build --noEmit || pnpm --filter web exec tsc --noEmit
-
-  test:
-    name: Unit & Integration Tests
-    runs-on: ubuntu-latest
-
     env:
-      NODE_ENV: test
-
+      SHORTENER_IMAGE: shortener:ci
+      DB_USER: root
+      DB_PASSWORD: password
+      DB_NAME: url_shortener
+      JWT_SECRET: test-jwt-secret-key-for-ci-minimum-32-characters-long
+      CORS_ORIGINS: http://127.0.0.1:8080
+      SERVER_PORT: 8080
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
 
-      - name: Setup pnpm
-        uses: pnpm/action-setup@v4
+      - uses: pnpm/action-setup@v6
         with:
-          version: 9
+          version: 10.34.5
 
-      - name: Setup Node.js
-        uses: actions/setup-node@v6
+      - uses: actions/setup-node@v6
         with:
-          node-version: "22"
-          cache: "pnpm"
+          node-version: "24"
+          cache: pnpm
 
-      - name: Install dependencies
-        run: pnpm install --frozen-lockfile
+      - run: pnpm install --frozen-lockfile
 
-      - name: Run tests
-        run: pnpm run test
+      - if: startsWith(github.ref, 'refs/tags/v')
+        name: Verify release version
+        run: test "v$(node -p "require('./package.json').version")" = "$GITHUB_REF_NAME"
 
-  build:
-    name: Build
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v6
+      - run: pnpm check
 
-      - name: Setup pnpm
-        uses: pnpm/action-setup@v4
-        with:
-          version: 9
+      - name: Build production image
+        run: docker build --tag shortener:ci .
 
-      - name: Setup Node.js
-        uses: actions/setup-node@v6
-        with:
-          node-version: "22"
-          cache: "pnpm"
+      - name: Smoke test production image
+        run: |
+          docker compose -f docker-compose.prod.yml up -d
 
-      - name: Install dependencies
-        run: pnpm install --frozen-lockfile
+          for attempt in {1..60}; do
+            if curl --fail --silent http://127.0.0.1:8080/health > /dev/null; then
+              break
+            fi
+            if [ "$attempt" = 60 ]; then
+              echo "Server did not become healthy"
+              exit 1
+            fi
+            sleep 1
+          done
 
-      - name: Build server
-        run: pnpm run server:build
+          curl --fail --silent http://127.0.0.1:8080/ | grep --ignore-case '<!doctype html>'
+          curl --fail --silent http://127.0.0.1:8080/login | grep --ignore-case '<!doctype html>'
+          curl --fail --silent http://127.0.0.1:8080/register | grep --ignore-case '<!doctype html>'
 
-      - name: Build web
-        run: pnpm run web:build
+          token=$(curl --fail --silent \
+            --header 'content-type: application/json' \
+            --data '{"email":"container-smoke@example.com","password":"Password123"}' \
+            http://127.0.0.1:8080/register | jq --raw-output '.token')
+          test -n "$token"
+          test "$token" != "null"
 
-      - name: Upload build artifacts
-        uses: actions/upload-artifact@v4
-        with:
-          name: build-output
-          path: |
-            server/dist/
-            web/dist/
-          retention-days: 7
+          curl --fail --silent \
+            --header 'content-type: application/json' \
+            --header "authorization: Bearer $token" \
+            --data '{"originalUrl":"https://example.com/container-smoke"}' \
+            http://127.0.0.1:8080/links | jq --exit-status '.existed == false'
+
+          container_id=$(docker compose -f docker-compose.prod.yml ps --quiet server)
+          test "$(docker inspect --format '{{.Config.User}}' "$container_id")" = "node"
+
+          docker compose -f docker-compose.prod.yml stop --timeout 15 server
+          test "$(docker inspect --format '{{.State.ExitCode}}' "$container_id")" = "0"
+
+      - if: failure()
+        name: Print container logs
+        run: docker compose -f docker-compose.prod.yml logs
+
+      - if: always()
+        name: Clean up containers
+        run: docker compose -f docker-compose.prod.yml down --volumes
 
   e2e:
     name: E2E Tests
     runs-on: ubuntu-latest
-
     services:
       postgres:
         image: postgres:16-alpine
@@ -116,7 +113,6 @@ jobs:
           --health-interval 10s
           --health-timeout 5s
           --health-retries 5
-
       redis:
         image: redis:7-alpine
         ports:
@@ -126,7 +122,6 @@ jobs:
           --health-interval 10s
           --health-timeout 5s
           --health-retries 5
-
     env:
       DATABASE_URL: postgresql://root:password@localhost:5432/url_shortener
       REDIS_URL: redis://localhost:6379
@@ -134,82 +129,97 @@ jobs:
       NODE_ENV: development
       SERVER_PORT: 8080
       WEB_PORT: 3001
-
+      CORS_ORIGINS: http://localhost:3001
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
 
-      - name: Setup pnpm
-        uses: pnpm/action-setup@v4
+      - uses: pnpm/action-setup@v6
         with:
-          version: 9
+          version: 10.34.5
 
-      - name: Setup Node.js
-        uses: actions/setup-node@v6
+      - uses: actions/setup-node@v6
         with:
-          node-version: "22"
-          cache: "pnpm"
+          node-version: "24"
+          cache: pnpm
 
-      - name: Install dependencies
-        run: pnpm install --frozen-lockfile
+      - run: pnpm install --frozen-lockfile
 
-      - name: Install Playwright browsers
+      - name: Install Playwright browser
         run: pnpm --filter web exec playwright install chromium --with-deps
 
-      - name: Create .env file for server
+      - name: Start server
         run: |
-          cat > server/.env << EOF
-          DATABASE_URL=${{ env.DATABASE_URL }}
-          REDIS_URL=${{ env.REDIS_URL }}
-          JWT_SECRET=${{ env.JWT_SECRET }}
-          NODE_ENV=${{ env.NODE_ENV }}
-          PORT=${{ env.SERVER_PORT }}
-          CORS_ORIGINS=http://localhost:${{ env.WEB_PORT }}
-          EOF
-          echo "Created .env file with:"
-          cat server/.env
+          pnpm server:dev > server.log 2>&1 &
+          echo $! > server.pid
 
-      - name: Run database migrations
-        run: pnpm run server:migrate
-
-      - name: Start server in background
+      - name: Wait for server
         run: |
-          pnpm run server:dev > server.log 2>&1 &
-          SERVER_PID=$!
-          echo $SERVER_PID > server.pid
-          echo "Server started with PID: $SERVER_PID"
-
-      - name: Wait for server to be ready
-        run: |
-          echo "Waiting for server at http://localhost:${{ env.SERVER_PORT }}/health..."
-          for i in {1..60}; do
-            if curl -sf http://localhost:${{ env.SERVER_PORT }}/health > /dev/null 2>&1; then
-              echo "✓ Server is ready after $i seconds!"
+          for attempt in {1..60}; do
+            if curl --fail --silent http://localhost:8080/health > /dev/null; then
               exit 0
             fi
-            echo "  Attempt $i/60..."
+            if [ "$attempt" = 60 ]; then
+              cat server.log
+              exit 1
+            fi
             sleep 1
           done
-          echo "✗ Server failed to start within 60 seconds"
-          echo "=== Server Logs ==="
-          cat server.log || echo "No server log found"
-          exit 1
 
       - name: Run E2E tests
         env:
-          VITE_API_URL: http://localhost:${{ env.SERVER_PORT }}
-        run: pnpm run web:test:e2e
+          VITE_API_URL: http://localhost:8080
+        run: pnpm test:e2e
 
-      - name: Stop server
-        if: always()
+      - if: always()
+        name: Stop server
         run: |
           if [ -f server.pid ]; then
-            kill $(cat server.pid) || true
+            kill "$(cat server.pid)" || true
           fi
 
-      - name: Upload test results
+      - if: failure()
+        name: Print server log
+        run: cat server.log
+
+      - if: always()
         uses: actions/upload-artifact@v4
-        if: always()
         with:
           name: playwright-report
           path: web/playwright-report/
           retention-days: 7
+
+  publish:
+    name: Publish GHCR image
+    if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v')
+    needs: [verify, e2e]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: docker/login-action@v4
+        with:
+          registry: ghcr.io
+          username: ${{ github.repository_owner }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - uses: docker/setup-qemu-action@v4
+      - uses: docker/setup-buildx-action@v4
+
+      - id: metadata
+        uses: docker/metadata-action@v6
+        with:
+          images: ghcr.io/eastsun5566/url-shortener-service
+          tags: |
+            type=semver,pattern={{version}}
+            type=semver,pattern={{major}}.{{minor}}
+
+      - uses: docker/build-push-action@v7
+        with:
+          context: .
+          platforms: linux/amd64,linux/arm64
+          push: true
+          tags: ${{ steps.metadata.outputs.tags }}
+          labels: ${{ steps.metadata.outputs.labels }}

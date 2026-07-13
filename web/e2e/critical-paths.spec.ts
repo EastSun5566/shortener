@@ -96,15 +96,20 @@ test.describe('Critical User Journey 3: Authenticated User Manages Links', () =>
     
     for (const url of urls) {
       await page.getByTestId('url-input').fill(url);
+      const createLinkResponse = page.waitForResponse((response) =>
+        response.url().endsWith('/links') && response.request().method() === 'POST'
+      );
       await page.getByTestId('shorten-button').click();
+      expect((await createLinkResponse).ok()).toBeTruthy();
       
       // Wait for success
       await expect(page.getByTestId('success-message')).toBeVisible({ timeout: 5000 });
     }
+
+    await expect(page.getByTestId('short-link')).toHaveCount(2, { timeout: 5000 });
     
     // Verify we have at least 2 links
     await page.reload();
-    const linkCount = await page.getByTestId('short-link').count();
-    expect(linkCount).toBeGreaterThanOrEqual(2);
+    await expect(page.getByTestId('short-link')).toHaveCount(2, { timeout: 5000 });
   });
 });

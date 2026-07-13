@@ -49,6 +49,7 @@ Thumbs.db
 
 # Documentation
 README.md
+demo.gif
 docs/
 *.md
 !package.json

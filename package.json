@@ -2,11 +2,25 @@
   "name": "shortener",
   "version": "1.0.0",
   "description": "🔗 A good URL shortener",
+  "packageManager": "pnpm@10.34.5",
+  "engines": {
+    "node": ">=24"
+  },
+  "pnpm": {
+    "overrides": {
+      "form-data": "4.0.6",
+      "lodash": "4.18.0"
+    }
+  },
   "scripts": {
-    "lint": "eslint --fix .",
+    "typecheck": "pnpm --filter server exec tsc --noEmit && pnpm --filter web exec tsc --noEmit",
+    "lint": "eslint .",
+    "lint:fix": "eslint --fix .",
     "test": "pnpm run server:test",
+    "test:production": "node --env-file=server/.env.example --test server/dist/src/__production_tests__/*.test.js",
     "test:e2e": "pnpm run web:test:e2e",
     "build": "pnpm run server:build && pnpm run web:build",
+    "check": "pnpm typecheck && pnpm lint && pnpm test && pnpm build && pnpm test:production",
     "server:dev": "pnpm --filter server dev",
     "server:migrate": "pnpm --filter server db:migrate",
     "server:build": "pnpm --filter server build",
@@ -25,7 +39,7 @@
     "eslint-plugin-react": "^7.37.4",
     "eslint-plugin-react-hooks": "^5.1.0",
     "globals": "^15.14.0",
-    "typescript": "*",
+    "typescript": "5.9.3",
     "typescript-eslint": "^8.23.0"
   }
 }

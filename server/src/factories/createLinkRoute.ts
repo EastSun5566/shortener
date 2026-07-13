@@ -74,10 +74,7 @@ export function createLinkRoute (deps: AppDependencies) {
       // get from cache
       const cached = await cacheService.get(shortenKey)
       if (cached) {
-        // Increment click count asynchronously (don't wait)
-        utilsService.incrementClickCount(shortenKey).catch(err => {
-          console.error('Failed to increment click count:', err)
-        })
+        await utilsService.incrementClickCount(shortenKey)
         
         // Use 302 for user links (tracking), 301 for anonymous links (performance)
         const statusCode = cached.userId ? 302 : 301
@@ -90,10 +87,7 @@ export function createLinkRoute (deps: AppDependencies) {
         throw new HTTPException(404, { message: 'Link not found' })
       }
 
-      // Increment click count asynchronously (don't wait)
-      utilsService.incrementClickCount(shortenKey).catch(err => {
-        console.error('Failed to increment click count:', err)
-      })
+      await utilsService.incrementClickCount(shortenKey)
 
       // add to cache
       await cacheService.set(shortenKey, link.originalUrl, link.userId)

@@ -3,7 +3,6 @@ import { checkCacheHealth } from '../services/cache.js'
 import { checkDbHealth } from '../drizzle/db.js'
 
 export const healthRoute = new Hono()
-  .get('/', (ctx) => ctx.text('OK'))
   .get('/health', async (ctx) => {
     const checks = {
       uptime: process.uptime(),

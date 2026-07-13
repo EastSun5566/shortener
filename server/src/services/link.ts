@@ -1,4 +1,4 @@
-import { eq, and } from 'drizzle-orm'
+import { eq, and, isNull, sql } from 'drizzle-orm'
 
 import { getCacheClient } from './cache.js'
 import { db } from '../drizzle/db.js'
@@ -6,41 +6,45 @@ import { toBase62 } from '../utils.js'
 import { links } from '../drizzle/schema.js'
 import { mightExist, addKey } from './bloomFilter.js'
 
+const RESERVED_SHORTEN_KEYS = new Set([
+  'assets',
+  'health',
+  'links',
+  'login',
+  'register'
+])
+
+export function isReservedShortenKey (shortenKey: string) {
+  return RESERVED_SHORTEN_KEYS.has(shortenKey)
+}
+
 export async function createShortenKey () {
   const cache = await getCacheClient()
   const KEY = 'api:globalCounter'
-  
-  let shortenKey: string
-  let attempts = 0
   const MAX_ATTEMPTS = 10
 
-  // if shortenKey collision occurs, retry
-  do {
+  for (let attempts = 0; attempts < MAX_ATTEMPTS; attempts++) {
     const count = await cache.incr(KEY)
-    shortenKey = toBase62(count)
-    
+    const shortenKey = toBase62(count)
+
+    if (isReservedShortenKey(shortenKey)) continue
+
     const exists = await mightExist(shortenKey)
     if (!exists) {
-      break
+      await addKey(shortenKey)
+      return shortenKey
     }
-    
+
     // Possible collision, check database to confirm
     const dbCheck = await findLinkByShortenKey(shortenKey)
     if (!dbCheck) {
       // Database confirms non-existence (false positive), safe to use
-      break
+      await addKey(shortenKey)
+      return shortenKey
     }
-    
-    attempts++
-    if (attempts >= MAX_ATTEMPTS) {
-      throw new Error('Failed to generate unique shorten key after max attempts')
-    }
-  } while (attempts < MAX_ATTEMPTS)
+  }
 
-  // Add the new key to Bloom Filter
-  await addKey(shortenKey)
-  
-  return shortenKey
+  throw new Error('Failed to generate unique shorten key after max attempts')
 }
 
 export async function findLinkByShortenKey (shortenKey: string) {
@@ -49,38 +53,13 @@ export async function findLinkByShortenKey (shortenKey: string) {
 }
 
 export async function incrementClickCount (shortenKey: string) {
-  const cache = await getCacheClient()
-  const CLICK_KEY = `click:${shortenKey}`
-  
-  // Increment in Redis for fast response
-  const count = await cache.incr(CLICK_KEY)
-  
-  // Sync to database every 10 clicks or after TTL expires
-  if (count % 10 === 0 || count === 1) {
-    // Asynchronously update database (don't wait)
-    syncClickCountToDb(shortenKey).catch(err => {
-      console.error(`Failed to sync click count for ${shortenKey}:`, err)
-    })
-  }
-  
-  return count
-}
-
-async function syncClickCountToDb (shortenKey: string) {
-  const cache = await getCacheClient()
-  const CLICK_KEY = `click:${shortenKey}`
-  
-  // Get current count from Redis
-  const countStr = await cache.get(CLICK_KEY)
-  if (!countStr) return
-  
-  const redisCount = parseInt(countStr, 10)
-  
-  // Update database
-  await db
+  const result = await db
     .update(links)
-    .set({ clickCount: redisCount })
+    .set({ clickCount: sql`${links.clickCount} + 1` })
     .where(eq(links.shortenKey, shortenKey))
+    .returning({ clickCount: links.clickCount })
+
+  return result[0]?.clickCount ?? 0
 }
 
 export async function findLinksByUserId (userId: number) {
@@ -88,9 +67,9 @@ export async function findLinksByUserId (userId: number) {
 }
 
 export async function findLinkByOriginalUrl (originalUrl: string, userId?: number) {
-  const conditions = userId
+  const conditions = userId !== undefined
     ? and(eq(links.originalUrl, originalUrl), eq(links.userId, userId))
-    : eq(links.originalUrl, originalUrl)
+    : and(eq(links.originalUrl, originalUrl), isNull(links.userId))
 
   const result = await db.select().from(links).where(conditions).limit(1)
   return result[0] ?? null

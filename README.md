@@ -33,6 +33,14 @@ docker compose up --build
 
 ## 自架部署
 
+正式環境預設會 pull 公開的 multi-platform image：
+
+```bash
+docker pull ghcr.io/eastsun5566/url-shortener-service:latest
+```
+
+可用的 release tag 包含完整版本（例如 `1.0.0`）、minor 版本（例如 `1.0`）與 `latest`。
+
 ### 1. 建立環境變數檔
 
 ```bash
@@ -53,7 +61,7 @@ SERVER_PORT=8080
 ### 2. 啟動正式環境
 
 ```bash
-docker compose -f docker-compose.prod.yml up -d --build
+docker compose -f docker-compose.prod.yml up -d
 ```
 
 正式環境只會啟動 `server`、`db`、`cache`，其中 `server` 會同時提供 API、短網址轉址與前端靜態檔案。
@@ -75,7 +83,8 @@ docker compose -f docker-compose.prod.yml down
 
 ```bash
 git pull
-docker compose -f docker-compose.prod.yml up -d --build
+docker compose -f docker-compose.prod.yml pull
+docker compose -f docker-compose.prod.yml up -d
 ```
 
 ### 5. 備份資料庫
@@ -86,12 +95,33 @@ docker compose exec db sh -c 'pg_dump -U "$POSTGRES_USER" "$POSTGRES_DB"' > back
 
 如果你要綁自己的網域，建議在 `:8080` 前面加一層 Caddy 或 Nginx。
 
+### 直接執行 image
+
+Image 需要外部 PostgreSQL 與 Redis。已有可連線的服務時，可以直接執行：
+
+```bash
+docker run --rm \
+  --network your-docker-network \
+  --publish 8080:8080 \
+  --env DATABASE_URL=postgresql://user:password@postgres:5432/url_shortener \
+  --env REDIS_URL=redis://redis:6379 \
+  --env JWT_SECRET=replace-with-a-secret-that-is-at-least-32-characters \
+  ghcr.io/eastsun5566/url-shortener-service:latest
+```
+
+若要使用本機 build 搭配 production Compose：
+
+```bash
+docker build --tag shortener:local .
+SHORTENER_IMAGE=shortener:local docker compose -f docker-compose.prod.yml up -d
+```
+
 ## 本地開發（不跑 server / web container）
 
 環境需求：
 
-- Node.js 22+
-- pnpm 9+
+- Node.js 24+
+- pnpm 10.34.5
 - Docker Desktop
 
 步驟：
@@ -100,7 +130,6 @@ docker compose exec db sh -c 'pg_dump -U "$POSTGRES_USER" "$POSTGRES_DB"' > back
 docker compose up db cache -d
 pnpm install
 cp server/.env.example server/.env
-pnpm server:migrate
 pnpm server:dev
 pnpm web:dev
 ```
@@ -113,7 +142,6 @@ pnpm web:dev
 ## 測試與建置
 
 ```bash
-pnpm test
-pnpm build
+pnpm check
 pnpm test:e2e
 ```

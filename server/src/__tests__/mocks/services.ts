@@ -46,7 +46,7 @@ export class MockLinkService implements LinkService {
       if (userId !== undefined) {
         return l.originalUrl === originalUrl && l.userId === userId
       }
-      return l.originalUrl === originalUrl
+      return l.originalUrl === originalUrl && l.userId === undefined
     })
     return link ? { originalUrl: link.originalUrl, shortenKey: link.shortenKey, userId: link.userId ?? null } : undefined
   }
@@ -131,6 +131,14 @@ export class MockUtilsService implements UtilsService {
     return newCount
   }
 
+  getClickCount (shortenKey: string): number {
+    return this.clickCounts.get(shortenKey) ?? 0
+  }
+
+  setClickCount (shortenKey: string, count: number): void {
+    this.clickCounts.set(shortenKey, count)
+  }
+
   hashPassword = async (password: string, _saltRounds: number): Promise<string> => {
     // Simple mock hash
     return `hashed-${password}`
@@ -143,6 +151,7 @@ export class MockUtilsService implements UtilsService {
   // Test helper
   reset () {
     this.keyCounter = 0
+    this.clickCounts.clear()
   }
 }
 
