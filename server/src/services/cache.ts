@@ -1,7 +1,7 @@
 import { createClient, type RedisClientType } from 'redis'
 import { setTimeout as sleep } from 'node:timers/promises'
 
-import { config } from '../config.js'
+import { config } from '../config.ts'
 
 let client: RedisClientType | null = null
 let isConnecting = false

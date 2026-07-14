@@ -3,8 +3,8 @@ import { migrate } from 'drizzle-orm/node-postgres/migrator'
 import { Pool } from 'pg'
 import { fileURLToPath } from 'node:url'
 
-import * as schema from './schema.js'
-import { config } from '../config.js'
+import * as schema from './schema.ts'
+import { config } from '../config.ts'
 
 export const pool = new Pool({
   connectionString: config.db.url,

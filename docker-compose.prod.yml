@@ -5,14 +5,14 @@ services:
     environment:
       POSTGRES_USER: ${DB_USER:-root}
       POSTGRES_PASSWORD: ${DB_PASSWORD:-password}
-      POSTGRES_DB: ${DB_NAME:-url_shortener}
+      POSTGRES_DB: ${DB_NAME:-shortener}
     volumes:
       - db_data:/var/lib/postgresql/data
     healthcheck:
       test:
         [
           "CMD-SHELL",
-          "pg_isready -U ${DB_USER:-root} -d ${DB_NAME:-url_shortener}",
+          "pg_isready -U ${DB_USER:-root} -d ${DB_NAME:-shortener}",
         ]
       interval: 10s
       timeout: 5s
@@ -30,7 +30,7 @@ services:
       retries: 5
 
   server:
-    image: ${SHORTENER_IMAGE:-ghcr.io/eastsun5566/url-shortener-service:latest}
+    image: ${SHORTENER_IMAGE:-ghcr.io/eastsun5566/shortener:latest}
     restart: always
     ports:
       - "${SERVER_PORT:-8080}:8080"
@@ -38,7 +38,7 @@ services:
       NODE_ENV: production
       HOST: "0.0.0.0"
       PORT: 8080
-      DATABASE_URL: postgresql://${DB_USER:-root}:${DB_PASSWORD:-password}@db:5432/${DB_NAME:-url_shortener}
+      DATABASE_URL: postgresql://${DB_USER:-root}:${DB_PASSWORD:-password}@db:5432/${DB_NAME:-shortener}
       CACHE_HOST: cache
       CACHE_PORT: 6379
       JWT_SECRET: ${JWT_SECRET}

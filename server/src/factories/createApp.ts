@@ -7,10 +7,10 @@ import { timeout } from 'hono/timeout'
 import { HTTPException } from 'hono/http-exception'
 import { serveStatic } from '@hono/node-server/serve-static'
 
-import type { AppDependencies } from '../types/services.js'
-import { createUserRoute } from './createUserRoute.js'
-import { createLinkRoute } from './createLinkRoute.js'
-import { healthRoute } from '../routes/health.js'
+import type { AppDependencies } from '../types/services.ts'
+import { createUserRoute } from './createUserRoute.ts'
+import { createLinkRoute } from './createLinkRoute.ts'
+import { healthRoute } from '../routes/health.ts'
 
 export function createApp (deps: AppDependencies) {
   const app = new Hono<{ Variables: RequestIdVariables }>()

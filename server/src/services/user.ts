@@ -1,7 +1,7 @@
 import { eq } from 'drizzle-orm'
 
-import { db } from '../drizzle/db.js'
-import { users } from '../drizzle/schema.js'
+import { db } from '../drizzle/db.ts'
+import { users } from '../drizzle/schema.ts'
 
 export async function findUserByEmail (email: string) {
   const result = await db.select().from(users).where(eq(users.email, email)).limit(1)

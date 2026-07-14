@@ -1,8 +1,8 @@
 import { describe, it } from 'node:test'
 import assert from 'node:assert'
-import { createApp } from '../../factories/createApp.js'
-import { createMockDependencies } from '../mocks/services.js'
-import type { MockLinkService } from '../mocks/services.js'
+import { createApp } from '../../factories/createApp.ts'
+import { createMockDependencies } from '../mocks/services.ts'
+import type { MockLinkService } from '../mocks/services.ts'
 
 describe('Link Routes - Integration Tests', () => {
   describe('POST /links', () => {

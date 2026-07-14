@@ -1,16 +1,16 @@
 import { serve } from '@hono/node-server'
-import { createApp } from './factories/createApp.js'
-import { config } from './config.js'
-import { closeCache, initCache } from './services/cache.js'
-import { closeDb, initDb, migrateDb } from './drizzle/db.js'
-import { initBloomFilter } from './services/bloomFilter.js'
+import { createApp } from './factories/createApp.ts'
+import { config } from './config.ts'
+import { closeCache, initCache } from './services/cache.ts'
+import { closeDb, initDb, migrateDb } from './drizzle/db.ts'
+import { initBloomFilter } from './services/bloomFilter.ts'
 import {
   userService,
   linkService,
   cacheService,
   tokenService,
   utilsService
-} from './services/impls.js'
+} from './services/impls.ts'
 
 const app = createApp({
   userService,

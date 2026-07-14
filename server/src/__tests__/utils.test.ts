@@ -1,8 +1,8 @@
-/* eslint-disable @typescript-eslint/no-empty-function */
+/* oxlint-disable no-empty-function */
 import { beforeEach, describe, it, mock } from 'node:test'
 import { strict as assert } from 'node:assert'
 
-import { toBase62, validateEnv } from '../utils.js'
+import { toBase62, validateEnv } from '../utils.ts'
 
 describe('Short URL Generation', () => {
   describe('toBase62', () => {

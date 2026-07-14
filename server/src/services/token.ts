@@ -1,6 +1,6 @@
 import jwt from 'jsonwebtoken'
 
-import { config } from '../config.js'
+import { config } from '../config.ts'
 
 interface TokenPayload {
   email: string

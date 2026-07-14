@@ -23,7 +23,7 @@ jobs:
       SHORTENER_IMAGE: shortener:ci
       DB_USER: root
       DB_PASSWORD: password
-      DB_NAME: url_shortener
+      DB_NAME: shortener
       JWT_SECRET: test-jwt-secret-key-for-ci-minimum-32-characters-long
       CORS_ORIGINS: http://127.0.0.1:8080
       SERVER_PORT: 8080
@@ -105,7 +105,7 @@ jobs:
         env:
           POSTGRES_USER: root
           POSTGRES_PASSWORD: password
-          POSTGRES_DB: url_shortener
+          POSTGRES_DB: shortener
         ports:
           - 5432:5432
         options: >-
@@ -123,7 +123,7 @@ jobs:
           --health-timeout 5s
           --health-retries 5
     env:
-      DATABASE_URL: postgresql://root:password@localhost:5432/url_shortener
+      DATABASE_URL: postgresql://root:password@localhost:5432/shortener
       REDIS_URL: redis://localhost:6379
       JWT_SECRET: test-jwt-secret-key-for-ci-minimum-32-characters-long
       NODE_ENV: development
@@ -211,7 +211,7 @@ jobs:
       - id: metadata
         uses: docker/metadata-action@v6
         with:
-          images: ghcr.io/eastsun5566/url-shortener-service
+          images: ghcr.io/eastsun5566/shortener
           tags: |
             type=semver,pattern={{version}}
             type=semver,pattern={{major}}.{{minor}}

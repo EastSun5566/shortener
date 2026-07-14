@@ -1,7 +1,7 @@
 import { describe, it } from 'node:test'
 import assert from 'node:assert'
-import { createApp } from '../../factories/createApp.js'
-import { createMockDependencies } from '../mocks/services.js'
+import { createApp } from '../../factories/createApp.ts'
+import { createMockDependencies } from '../mocks/services.ts'
 
 describe('User Routes - Integration Tests', () => {
   describe('POST /register', () => {

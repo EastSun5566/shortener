@@ -1,6 +1,6 @@
 import { createMiddleware } from 'hono/factory'
 import { HTTPException } from 'hono/http-exception'
-import type { TokenService } from '../types/services.js'
+import type { TokenService } from '../types/services.ts'
 
 export interface AuthVariables {
   userId: number

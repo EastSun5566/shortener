@@ -10,7 +10,7 @@ WORKDIR /app
 
 FROM base AS dependencies
 
-COPY package.json pnpm-lock.yaml pnpm-workspace.yaml .npmrc ./
+COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
 COPY server/package.json ./server/package.json
 COPY web/package.json ./web/package.json
 
@@ -35,7 +35,7 @@ RUN pnpm build
 
 FROM base AS production-dependencies
 
-COPY package.json pnpm-lock.yaml pnpm-workspace.yaml .npmrc ./
+COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
 COPY server/package.json ./server/package.json
 COPY web/package.json ./web/package.json
 
@@ -44,7 +44,7 @@ RUN --mount=type=cache,id=pnpm,target=/pnpm/store \
 
 FROM node:${NODE_VERSION} AS production
 
-LABEL org.opencontainers.image.title="URL Shortener Service"
+LABEL org.opencontainers.image.title="Shortener"
 LABEL org.opencontainers.image.description="Self-hosted URL shortener with PostgreSQL and Redis"
 LABEL org.opencontainers.image.source="https://github.com/EastSun5566/shortener"
 LABEL org.opencontainers.image.licenses="MIT"

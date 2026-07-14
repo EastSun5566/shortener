@@ -4,7 +4,7 @@ services:
     environment:
       POSTGRES_USER: ${DB_USER:-root}
       POSTGRES_PASSWORD: ${DB_PASSWORD:-password}
-      POSTGRES_DB: ${DB_NAME:-url_shortener}
+      POSTGRES_DB: ${DB_NAME:-shortener}
     ports:
       - "${DB_PORT:-5432}:5432"
     volumes:
@@ -13,7 +13,7 @@ services:
       test:
         [
           "CMD-SHELL",
-          "pg_isready -U ${DB_USER:-root} -d ${DB_NAME:-url_shortener}",
+          "pg_isready -U ${DB_USER:-root} -d ${DB_NAME:-shortener}",
         ]
       interval: 10s
       timeout: 5s
@@ -46,8 +46,8 @@ services:
       DB_PORT: 5432
       DB_USER: ${DB_USER:-root}
       DB_PASSWORD: ${DB_PASSWORD:-password}
-      DB_NAME: ${DB_NAME:-url_shortener}
-      DATABASE_URL: postgresql://${DB_USER:-root}:${DB_PASSWORD:-password}@db:5432/${DB_NAME:-url_shortener}
+      DB_NAME: ${DB_NAME:-shortener}
+      DATABASE_URL: postgresql://${DB_USER:-root}:${DB_PASSWORD:-password}@db:5432/${DB_NAME:-shortener}
       CACHE_HOST: cache
       CACHE_PORT: 6379
       HOST: "0.0.0.0"

@@ -1,7 +1,7 @@
 import BloomFilterClass from 'bloom-filters'
-import { getCacheClient } from './cache.js'
-import { db } from '../drizzle/db.js'
-import { links } from '../drizzle/schema.js'
+import { getCacheClient } from './cache.ts'
+import { db } from '../drizzle/db.ts'
+import { links } from '../drizzle/schema.ts'
 
 const BLOOM_FILTER_KEY = 'api:bloomFilter:shortenKeys'
 const EXPECTED_ITEMS = 10_000_000

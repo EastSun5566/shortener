@@ -1,8 +1,8 @@
 import { describe, it } from 'node:test'
 import assert from 'node:assert'
 
-import { createApp } from '../factories/createApp.js'
-import { createMockDependencies } from '../__tests__/mocks/services.js'
+import { createApp } from '../factories/createApp.ts'
+import { createMockDependencies } from '../__tests__/mocks/services.ts'
 
 describe('Production routing', () => {
   it('serves the SPA on reserved client routes', async () => {

@@ -1,7 +1,7 @@
 import { describe, it } from 'node:test'
 import assert from 'node:assert'
 
-import { isReservedShortenKey } from '../../services/link.js'
+import { isReservedShortenKey } from '../../services/link.ts'
 
 describe('Short-link key reservations', () => {
   it('reserves application and asset routes', () => {

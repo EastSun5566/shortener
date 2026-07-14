@@ -3,8 +3,8 @@ import { zValidator } from '@hono/zod-validator'
 import { z } from 'zod'
 import { HTTPException } from 'hono/http-exception'
 import { rateLimiter } from 'hono-rate-limiter'
-import type { AppDependencies } from '../types/services.js'
-import { createAuthMiddleware, createOptionalAuthMiddleware } from './createAuthMiddleware.js'
+import type { AppDependencies } from '../types/services.ts'
+import { createAuthMiddleware, createOptionalAuthMiddleware } from './createAuthMiddleware.ts'
 
 const createLinkSchema = z.object({
   originalUrl: z.url('Invalid URL format')

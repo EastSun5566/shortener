@@ -3,7 +3,7 @@ import { zValidator } from '@hono/zod-validator'
 import { z } from 'zod'
 import { HTTPException } from 'hono/http-exception'
 import { rateLimiter } from 'hono-rate-limiter'
-import type { AppDependencies } from '../types/services.js'
+import type { AppDependencies } from '../types/services.ts'
 
 const authSchema = z.object({
   email: z.email('Invalid email format').toLowerCase(),

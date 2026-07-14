@@ -5,14 +5,14 @@ import type {
   CacheService,
   TokenService,
   UtilsService
-} from '../types/services.js'
+} from '../types/services.ts'
 
-import * as userSvc from './user.js'
-import * as linkSvc from './link.js'
-import * as tokenSvc from './token.js'
-import { getCacheClient } from './cache.js'
-import { createShortenKey } from './link.js'
-import { config } from '../config.js'
+import * as userSvc from './user.ts'
+import * as linkSvc from './link.ts'
+import * as tokenSvc from './token.ts'
+import { getCacheClient } from './cache.ts'
+import { createShortenKey } from './link.ts'
+import { config } from '../config.ts'
 
 export const userService: UserService = {
   createUser: userSvc.createUser,

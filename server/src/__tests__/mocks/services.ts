@@ -5,10 +5,10 @@ import type {
   TokenService,
   UtilsService,
   AppDependencies
-} from '../../types/services.js'
+} from '../../types/services.ts'
 
-/* eslint-disable @typescript-eslint/require-await */
-/* eslint-disable @typescript-eslint/no-unused-vars */
+/* oxlint-disable typescript/require-await */
+/* oxlint-disable no-unused-vars */
 
 export class MockUserService implements UserService {
   private users: { id: number, email: string, password: string }[] = []
@@ -173,7 +173,7 @@ export function createMockDependencies (): AppDependencies {
         linkTtl: 60
       },
       db: {
-        url: 'postgresql://root:password@localhost:5432/url_shortener'
+        url: 'postgresql://root:password@localhost:5432/shortener'
       },
       security: {
         bcryptSaltRounds: 12,

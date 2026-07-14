@@ -1,10 +1,10 @@
 import { eq, and, isNull, sql } from 'drizzle-orm'
 
-import { getCacheClient } from './cache.js'
-import { db } from '../drizzle/db.js'
-import { toBase62 } from '../utils.js'
-import { links } from '../drizzle/schema.js'
-import { mightExist, addKey } from './bloomFilter.js'
+import { getCacheClient } from './cache.ts'
+import { db } from '../drizzle/db.ts'
+import { toBase62 } from '../utils.ts'
+import { links } from '../drizzle/schema.ts'
+import { mightExist, addKey } from './bloomFilter.ts'
 
 const RESERVED_SHORTEN_KEYS = new Set([
   'assets',
