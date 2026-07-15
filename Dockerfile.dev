@@ -1,7 +1,7 @@
 # Development Dockerfile for web service
 # This is separate from main Dockerfile to support hot reload in development
 
-FROM node:24-alpine
+FROM node:24-trixie-slim
 
 # Enable the package manager pinned in package.json
 RUN corepack enable

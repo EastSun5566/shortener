@@ -41,10 +41,13 @@ start_container
 wait_for_health
 
 test "$(docker exec "$container" node --version | cut -d. -f1)" = "v24"
-docker exec "$container" grep -q 'VERSION_CODENAME=bookworm' /etc/os-release
+docker exec "$container" grep -q 'VERSION_CODENAME=trixie' /etc/os-release
+docker exec "$container" test -s /usr/share/doc/redis/LICENSE.txt
+docker exec "$container" test -s /usr/share/doc/shortener-demo/THIRD_PARTY_NOTICES.md
 postgres_version=$(docker exec "$container" postgres --version 2>&1)
-test "${postgres_version%%.*}" = 'postgres (PostgreSQL) 16'
-test "$(docker exec "$container" redis-server --version | sed -n 's/.*v=\([0-9]*\).*/\1/p')" = '7'
+test "${postgres_version%%.*}" = 'postgres (PostgreSQL) 18'
+test "$(docker exec "$container" printenv PGDATA)" = '/var/lib/postgresql/18/docker'
+test "$(docker exec "$container" redis-server --version | sed -n 's/.*v=\([0-9]*\.[0-9]*\).*/\1/p')" = '8.8'
 test "$(docker exec "$container" cat /proc/1/comm)" = "s6-svscan"
 
 docker exec "$container" sh -eu -c '
@@ -100,3 +103,25 @@ docker rm --volumes "$container" >/dev/null
 start_container
 wait_for_health
 test "$(curl --silent --output /dev/null --write-out '%{http_code}' "http://127.0.0.1:${port}/${shorten_key}")" = "404"
+
+docker rm --force --volumes "$container" >/dev/null
+docker run --detach \
+  --name "$container" \
+  --memory 512m \
+  --env JWT_SECRET=too-short \
+  "$image" >/dev/null
+
+for attempt in $(seq 1 30); do
+  if [ "$(docker inspect --format '{{.State.Running}}' "$container")" = "false" ]; then
+    break
+  fi
+  if [ "$attempt" -eq 30 ]; then
+    docker logs "$container"
+    echo "Demo container did not fail after invalid initialization." >&2
+    exit 1
+  fi
+  sleep 1
+done
+
+test "$(docker inspect --format '{{.State.ExitCode}}' "$container")" != "0"
+docker logs "$container" 2>&1 | grep -q 'JWT_SECRET must be at least 32 characters'

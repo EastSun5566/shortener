@@ -88,7 +88,16 @@ jobs:
           container_id=$(docker compose -f docker-compose.prod.yml ps --quiet server)
           test "$(docker inspect --format '{{.Config.User}}' "$container_id")" = "node"
           test "$(docker exec "$container_id" node --version | cut -d. -f1)" = "v24"
-          docker exec "$container_id" grep -q 'VERSION_CODENAME=bookworm' /etc/os-release
+          docker exec "$container_id" grep -q 'VERSION_CODENAME=trixie' /etc/os-release
+
+          db_container_id=$(docker compose -f docker-compose.prod.yml ps --quiet db)
+          test "$(docker exec "$db_container_id" postgres --version | sed -n 's/^postgres (PostgreSQL) \([0-9]*\).*/\1/p')" = "18"
+          test "$(docker inspect --format '{{range .Config.Env}}{{println .}}{{end}}' "$db_container_id" | sed -n 's/^PGDATA=//p')" = "/var/lib/postgresql/18/docker"
+          docker exec "$db_container_id" grep -q 'VERSION_CODENAME=trixie' /etc/os-release
+
+          cache_container_id=$(docker compose -f docker-compose.prod.yml ps --quiet cache)
+          test "$(docker exec "$cache_container_id" redis-server --version | sed -n 's/.*v=\([0-9]*\.[0-9]*\).*/\1/p')" = "8.8"
+          docker exec "$cache_container_id" grep -q 'VERSION_CODENAME=trixie' /etc/os-release
 
           docker compose -f docker-compose.prod.yml stop --timeout 15 server
           test "$(docker inspect --format '{{.State.ExitCode}}' "$container_id")" = "0"
@@ -109,7 +118,7 @@ jobs:
     runs-on: ubuntu-latest
     services:
       postgres:
-        image: postgres:16-alpine
+        image: postgres:18-trixie
         env:
           POSTGRES_USER: root
           POSTGRES_PASSWORD: password
@@ -122,7 +131,7 @@ jobs:
           --health-timeout 5s
           --health-retries 5
       redis:
-        image: redis:7-alpine
+        image: redis:8.8-trixie
         ports:
           - 6379:6379
         options: >-

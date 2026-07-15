@@ -39,7 +39,9 @@ docker compose up --build
 docker pull ghcr.io/eastsun5566/shortener:latest
 ```
 
-可用的 release tag 包含完整版本（例如 `1.2.0`）、minor 版本（例如 `1.2`）與 `latest`。
+可用的 release tag 包含完整版本（例如 `2.0.0`）、minor 版本（例如 `2.0`）與 `latest`。
+
+> **升級至 2.0.0 會建立新的空資料庫。** 2.0.0 將 PostgreSQL 升至 18，並配合官方 image 的新資料目錄 layout。既有 PostgreSQL 16 volume 不會被自動遷移、掛載或刪除；請先完成備份，再決定是否切換。
 
 ### 1. 建立環境變數檔
 
@@ -87,6 +89,25 @@ docker compose -f docker-compose.prod.yml pull
 docker compose -f docker-compose.prod.yml up -d
 ```
 
+#### 從 1.x 升級至 2.0.0
+
+2.0.0 使用新的 `db_data_v18` 與 `cache_data_v8` volumes。第一次啟動時會建立全新的 PostgreSQL 18 資料庫；舊的 `db_data`／`cache_data` volumes 會留在 Docker 中，但新 stack 不會讀取或修改它們。本專案不會自動執行 PostgreSQL major-version migration。
+
+升級前先備份舊資料庫。升級後可用以下指令找出保留的舊 volumes：
+
+```bash
+docker volume ls --filter name=_db_data
+docker volume ls --filter name=_cache_data
+```
+
+只有在確認備份可用、也不再需要回退至 1.x 後，才手動移除指定 volume：
+
+```bash
+docker volume rm <old-volume-name>
+```
+
+Redis 只保存可重建的快取，因此 2.0.0 直接改用新的 v8 cache volume。若需要保留 PostgreSQL 16 的既有資料，請先自行規劃 `pg_dump`／`pg_restore`，不要把舊 data directory 直接掛給 PostgreSQL 18。
+
 ### 5. 備份資料庫
 
 ```bash
@@ -124,7 +145,7 @@ SHORTENER_IMAGE=shortener:local docker compose -f docker-compose.prod.yml up -d
 docker run --rm \
   --publish 8080:8080 \
   --env JWT_SECRET="$(openssl rand -base64 32)" \
-  ghcr.io/eastsun5566/shortener-demo:1.2.0
+  ghcr.io/eastsun5566/shortener-demo:2.0.0
 ```
 
 啟動後開啟 <http://localhost:8080>，健康檢查位於 <http://localhost:8080/health>。

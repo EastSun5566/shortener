@@ -1,6 +1,6 @@
 services:
   db:
-    image: postgres:16-alpine
+    image: postgres:18-trixie
     environment:
       POSTGRES_USER: ${DB_USER:-root}
       POSTGRES_PASSWORD: ${DB_PASSWORD:-password}
@@ -8,7 +8,7 @@ services:
     ports:
       - "${DB_PORT:-5432}:5432"
     volumes:
-      - db_data:/var/lib/postgresql/data
+      - db_data_v18:/var/lib/postgresql
     healthcheck:
       test:
         [
@@ -20,11 +20,11 @@ services:
       retries: 5
 
   cache:
-    image: redis:7-alpine
+    image: redis:8.8-trixie
     ports:
       - "${REDIS_PORT:-6379}:6379"
     volumes:
-      - cache_data:/data
+      - cache_data_v8:/data
     healthcheck:
       test: ["CMD", "redis-cli", "ping"]
       interval: 10s
@@ -97,5 +97,5 @@ services:
     command: sh -c "cd /app/web && pnpm run dev"
 
 volumes:
-  db_data:
-  cache_data:
+  db_data_v18:
+  cache_data_v8:

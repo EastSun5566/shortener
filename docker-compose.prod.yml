@@ -1,13 +1,13 @@
 services:
   db:
-    image: postgres:16-alpine
+    image: postgres:18-trixie
     restart: always
     environment:
       POSTGRES_USER: ${DB_USER:-root}
       POSTGRES_PASSWORD: ${DB_PASSWORD:-password}
       POSTGRES_DB: ${DB_NAME:-shortener}
     volumes:
-      - db_data:/var/lib/postgresql/data
+      - db_data_v18:/var/lib/postgresql
     healthcheck:
       test:
         [
@@ -19,10 +19,10 @@ services:
       retries: 5
 
   cache:
-    image: redis:7-alpine
+    image: redis:8.8-trixie
     restart: always
     volumes:
-      - cache_data:/data
+      - cache_data_v8:/data
     healthcheck:
       test: ["CMD", "redis-cli", "ping"]
       interval: 10s
@@ -52,5 +52,5 @@ services:
         condition: service_healthy
 
 volumes:
-  db_data:
-  cache_data:
+  db_data_v18:
+  cache_data_v8:
