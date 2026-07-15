@@ -1,0 +1,4 @@
+#!/command/with-contenv sh
+set -eu
+
+exec s6-setuidgid redis redis-server /etc/shortener-demo/redis.conf

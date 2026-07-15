@@ -50,6 +50,9 @@ jobs:
       - name: Build production image
         run: docker build --tag shortener:ci .
 
+      - name: Build demo image
+        run: docker build --target demo --tag shortener-demo:ci .
+
       - name: Smoke test production image
         run: |
           docker compose -f docker-compose.prod.yml up -d
@@ -84,9 +87,14 @@ jobs:
 
           container_id=$(docker compose -f docker-compose.prod.yml ps --quiet server)
           test "$(docker inspect --format '{{.Config.User}}' "$container_id")" = "node"
+          test "$(docker exec "$container_id" node --version | cut -d. -f1)" = "v24"
+          docker exec "$container_id" grep -q 'VERSION_CODENAME=bookworm' /etc/os-release
 
           docker compose -f docker-compose.prod.yml stop --timeout 15 server
           test "$(docker inspect --format '{{.State.ExitCode}}' "$container_id")" = "0"
+
+      - name: Smoke test demo image
+        run: bash scripts/smoke-demo.sh shortener-demo:ci
 
       - if: failure()
         name: Print container logs
@@ -208,7 +216,7 @@ jobs:
       - uses: docker/setup-qemu-action@v4
       - uses: docker/setup-buildx-action@v4
 
-      - id: metadata
+      - id: production-metadata
         uses: docker/metadata-action@v6
         with:
           images: ghcr.io/eastsun5566/shortener
@@ -221,5 +229,22 @@ jobs:
           context: .
           platforms: linux/amd64,linux/arm64
           push: true
-          tags: ${{ steps.metadata.outputs.tags }}
-          labels: ${{ steps.metadata.outputs.labels }}
+          tags: ${{ steps.production-metadata.outputs.tags }}
+          labels: ${{ steps.production-metadata.outputs.labels }}
+
+      - id: demo-metadata
+        uses: docker/metadata-action@v6
+        with:
+          images: ghcr.io/eastsun5566/shortener-demo
+          tags: |
+            type=semver,pattern={{version}}
+            type=semver,pattern={{major}}.{{minor}}
+
+      - uses: docker/build-push-action@v7
+        with:
+          context: .
+          target: demo
+          platforms: linux/amd64,linux/arm64
+          push: true
+          tags: ${{ steps.demo-metadata.outputs.tags }}
+          labels: ${{ steps.demo-metadata.outputs.labels }}

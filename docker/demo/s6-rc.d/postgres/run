@@ -1,0 +1,12 @@
+#!/command/with-contenv sh
+set -eu
+
+export POSTGRES_USER=shortener
+export POSTGRES_DB=shortener
+export POSTGRES_HOST_AUTH_METHOD=trust
+
+exec /usr/local/bin/docker-entrypoint.sh postgres \
+  -c listen_addresses=127.0.0.1 \
+  -c shared_buffers=32MB \
+  -c max_connections=20 \
+  -c logging_collector=off

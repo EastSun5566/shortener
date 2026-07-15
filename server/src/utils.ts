@@ -10,6 +10,9 @@ const envSchema = z.object({
   CACHE_PORT: z.string().transform(Number).pipe(z.number().positive()).optional(),
   REDIS_URL: z.url().optional(),
 
+  // Bloom filter
+  BLOOM_FILTER_EXPECTED_ITEMS: z.string().default('10000000').transform(Number).pipe(z.number().int().positive()),
+
   // Database
   DATABASE_URL: z.url(),
 

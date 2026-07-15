@@ -2,13 +2,13 @@ import BloomFilterClass from 'bloom-filters'
 import { getCacheClient } from './cache.ts'
 import { db } from '../drizzle/db.ts'
 import { links } from '../drizzle/schema.ts'
+import { config } from '../config.ts'
 
 const BLOOM_FILTER_KEY = 'api:bloomFilter:shortenKeys'
-const EXPECTED_ITEMS = 10_000_000
 const ERROR_RATE = 0.01
 
 // BloomFilter.create(expectedItems, errorRate) automatically calculates:
-// - Optimal size: m = -n*ln(p) / (ln(2)^2) ≈ 119,808,035 bits for 10M items at 1% error
+// - Optimal size: m = -n*ln(p) / (ln(2)^2)
 // - Optimal hash functions: k = (m/n) * ln(2) ≈ 7 functions
 
 const BloomFilter = BloomFilterClass.BloomFilter
@@ -33,7 +33,7 @@ export async function initBloomFilter() {
   }
 
   console.log('🔧 Building Bloom Filter from database...')
-  bloomFilter = BloomFilter.create(EXPECTED_ITEMS, ERROR_RATE)
+  bloomFilter = BloomFilter.create(config.bloomFilter.expectedItems, ERROR_RATE)
 
   const allLinks = await db.select({ shortenKey: links.shortenKey }).from(links)
   for (const link of allLinks) {

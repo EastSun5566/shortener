@@ -65,7 +65,21 @@ describe('Environment Variables Validation', () => {
 
     assert.strictEqual(result.JWT_EXPIRES_IN, '7d')
     assert.strictEqual(result.BCRYPT_SALT_ROUNDS, 12)
+    assert.strictEqual(result.BLOOM_FILTER_EXPECTED_ITEMS, 10_000_000)
     assert.strictEqual(result.NODE_ENV, 'development')
+  })
+
+  it('should transform BLOOM_FILTER_EXPECTED_ITEMS to number', () => {
+    process.env = {
+      DATABASE_URL: 'postgresql://user:pass@localhost:5432/test',
+      JWT_SECRET: 'this-is-a-very-long-secret-key-more-than-32-characters',
+      BLOOM_FILTER_EXPECTED_ITEMS: '100000'
+    }
+
+    const result = validateEnv()
+
+    assert.strictEqual(result.BLOOM_FILTER_EXPECTED_ITEMS, 100_000)
+    assert.strictEqual(typeof result.BLOOM_FILTER_EXPECTED_ITEMS, 'number')
   })
 
   it('should transform PORT to number', () => {

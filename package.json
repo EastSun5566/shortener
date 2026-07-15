@@ -1,6 +1,6 @@
 {
   "name": "shortener",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "description": "🔗 A good URL shortener",
   "packageManager": "pnpm@10.34.5",
   "engines": {

@@ -1,0 +1,13 @@
+#!/command/with-contenv sh
+set -eu
+
+if [ -z "${JWT_SECRET:-}" ] || [ "${#JWT_SECRET}" -lt 32 ]; then
+  echo "ERROR: JWT_SECRET must be at least 32 characters." >&2
+  exit 1
+fi
+
+cat >&2 <<'EOF'
+WARNING: Running the ephemeral Shortener demo image.
+Accounts and short links can disappear after a container restart, redeploy, or idle spin-down.
+Use the standard Shortener image with external PostgreSQL and Redis for production.
+EOF

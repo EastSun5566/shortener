@@ -39,7 +39,7 @@ docker compose up --build
 docker pull ghcr.io/eastsun5566/shortener:latest
 ```
 
-可用的 release tag 包含完整版本（例如 `1.1.0`）、minor 版本（例如 `1.1`）與 `latest`。
+可用的 release tag 包含完整版本（例如 `1.2.0`）、minor 版本（例如 `1.2`）與 `latest`。
 
 ### 1. 建立環境變數檔
 
@@ -87,26 +87,7 @@ docker compose -f docker-compose.prod.yml pull
 docker compose -f docker-compose.prod.yml up -d
 ```
 
-### 5. 從 1.0 升級資料庫名稱
-
-1.1 起，新安裝預設使用 `shortener` 作為資料庫名稱。既有資料不會自動改名，避免部署時意外修改資料。
-
-最低風險的升級方式是在 `.env` 保留舊名稱：
-
-```env
-DB_NAME=url_shortener
-```
-
-若要一併改成新名稱，先停止 server 並在 PostgreSQL 內重新命名：
-
-```bash
-docker compose -f docker-compose.prod.yml stop server
-docker compose -f docker-compose.prod.yml exec db sh -c 'psql -U "$POSTGRES_USER" -d postgres -c "ALTER DATABASE url_shortener RENAME TO shortener;"'
-```
-
-接著將 `.env` 改成 `DB_NAME=shortener`，再執行 `docker compose -f docker-compose.prod.yml up -d`。
-
-### 6. 備份資料庫
+### 5. 備份資料庫
 
 ```bash
 docker compose -f docker-compose.prod.yml exec db sh -c 'pg_dump -U "$POSTGRES_USER" "$POSTGRES_DB"' > backup.sql
@@ -134,6 +115,21 @@ docker run --rm \
 docker build --tag shortener:local .
 SHORTENER_IMAGE=shortener:local docker compose -f docker-compose.prod.yml up -d
 ```
+
+## 一體式 Demo image
+
+`shortener-demo` 在單一 container 內啟動 Node.js、PostgreSQL 與 Redis，適合快速展示或短期測試：
+
+```bash
+docker run --rm \
+  --publish 8080:8080 \
+  --env JWT_SECRET="$(openssl rand -base64 32)" \
+  ghcr.io/eastsun5566/shortener-demo:1.2.0
+```
+
+啟動後開啟 <http://localhost:8080>，健康檢查位於 <http://localhost:8080/health>。
+
+> 這是可重置的 demo appliance，不是 production 部署方式。PostgreSQL 資料存在 container 的 ephemeral filesystem；container 被移除、Render restart、redeploy 或 idle spin-down 後，帳號與短網址都可能消失。需要持久化、備份、擴展或高可用時，請使用上面的 production Compose。
 
 ## 本地開發（不跑 server / web container）
 
